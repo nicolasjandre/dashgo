@@ -1,4 +1,4 @@
-import { createServer, Model, Factory } from 'miragejs'
+import { createServer, Model, Factory, Response, ActiveModelSerializer } from 'miragejs'
 import { faker } from '@faker-js/faker';
 
 type User = {
@@ -9,6 +9,10 @@ type User = {
 
 export function makeServer() {
   const server = createServer({
+    serializers: {
+      application: ActiveModelSerializer,
+    },
+
     models: {
       user: Model.extend<Partial<User>>({})
     },
@@ -16,7 +20,7 @@ export function makeServer() {
     factories: {
       user: Factory.extend({
         name() {
-           return faker.name.fullName()
+          return faker.name.fullName()
         },
         email() {
           return faker.internet.email().toLowerCase()
@@ -28,17 +32,32 @@ export function makeServer() {
     },
 
     seeds(server) {
-      server.createList('user', 10)
+      server.createList('user', 31)
     },
 
     routes() {
+      this.passthrough('http://localhost:3333/**')
       this.namespace = 'api';
       this.timing = 750;
 
-      this.get('/users');
-      this.post('/users');
+      this.get('/users', function (this: any, schema, request) {
+        const { page = 1, per_page = 10 } = request.queryParams
 
-      this.namespace = '';
+        const total = schema.all('user').length
+
+        const pageStart = (Number(page) - 1) * Number(per_page)
+        const pageEnd = pageStart + Number(per_page)
+        const users = this.serialize(schema.all('user'))
+          .users
+          .sort((a: User, b: User) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          .slice(pageStart, pageEnd);
+
+        return new Response(200, { 'x-total-count': String(total) }, { users })
+      }
+      );
+      this.get('/users/:id')
+      this.post('/users');
+      this.namespace = ''
       this.passthrough()
     }
   })

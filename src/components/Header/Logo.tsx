@@ -1,15 +1,22 @@
-import { Text } from '@chakra-ui/react'
-import { useRouter } from 'next/router'
+import { Text } from "@chakra-ui/react";
+import { useRouter } from "next/router";
 
-export function Logo() {
-  const router = useRouter()
+export function Logo({ ...rest }) {
+  let { asPath } = useRouter()
 
   return (
-      <Text cursor='pointer' onClick={() => router.push('/dashboard')} fontSize={['xl', '3xl']} fontWeight="bold" letterSpacing="tight" w="64">
-        dashgo
-        <Text ml="1 " as="span" color="red.500">
-          .
-        </Text>
+    <Text
+      display='block'
+      cursor="default"
+      fontSize={[asPath === '/' ? '5xl' : 'xl', asPath === '/' ? '5xl' : '3xl']}
+      fontWeight="bold"
+      letterSpacing="tight"
+      {...rest}
+    >
+      dashgo
+      <Text ml="1 " as="span" color="red.500">
+        .
       </Text>
-  )
+    </Text>
+  );
 }
