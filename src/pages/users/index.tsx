@@ -25,7 +25,7 @@ import { RxUpdate } from "react-icons/rx";
 import { Header } from "../../components/Header";
 import { Pagination } from "../../components/Pagination";
 import { Sidebar } from "../../components/Sidebar";
-import { api } from "../../services/api";
+import { api } from "../../services/axios-api";
 import { useUsers } from "../../services/hooks/useUsers";
 import { queryClient } from "../../services/QueryClient";
 

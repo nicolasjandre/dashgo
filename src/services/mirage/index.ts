@@ -59,6 +59,16 @@ export function makeServer() {
       this.post('/users');
       this.namespace = ''
       this.passthrough()
+
+      if (typeof window !== "undefined") {
+        const NativeXMLHttpRequest = window.XMLHttpRequest;
+        
+        window.XMLHttpRequest = function XMLHttpRequest() {
+          const request = new NativeXMLHttpRequest(arguments);
+          delete request.onloadend;
+          return request;
+        }
+      }
     }
   })
 }

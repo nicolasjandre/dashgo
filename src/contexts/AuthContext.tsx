@@ -1,4 +1,7 @@
-import { createContext, ReactNode } from "react";
+import { useRouter } from "next/router";
+import { setCookie, parseCookies } from "nookies";
+import { createContext, ReactNode, useEffect, useState } from "react";
+import { authApi } from "../services/axios-api";
 
 type AuthProviderProps = {
   children: ReactNode;
@@ -10,50 +13,93 @@ type signInCredentials = {
 };
 
 type AuthContextData = {
-  signIn(credentials: signInCredentials): Promise<SignIn>;
+  signIn(credentials: signInCredentials): Promise<void>;
   isAuthenticated: boolean;
+  user: User;
 };
 
-type SignIn = {
-    token: string;
-    refreshToken: string;
-    roles: [];
-    permissions: []
-}
+type User = {
+  name: string;
+  email: string;
+  avatar: string;
+  permissions: string[];
+  roles: string[];
+} | null;
 
 export const AuthContext = createContext({} as AuthContextData);
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const isAuthenticated = false;
+  const router = useRouter();
+  const [avatar, setAvatar] = useState("");
+  const [user, setUser] = useState<User | null>(null);
+  const isAuthenticated = !!user;
 
-    async function signIn({ email, password }: signInCredentials) {
-        /* Was necessary use fetch because axios doesn't works properly with   
-           mirageJS. The passthrough function seens to not work when using
-           axios to make the api call */
-      try {
-        const response = await fetch("http://localhost:3333/sessions", {
-          method: "POST",
-          body: JSON.stringify({
-            email,
-            password,
-          }),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        })
-          .then((response) => response.json())
-          .catch((error) => {
-            throw new Error(error);
-          });
+  useEffect(() => {
+    const { "dashgo.token": token } = parseCookies();
 
-        return response;
-      } catch (err) {
-        console.log("Error:", err);
-      }
+    if (token) {
+      authApi.get("/me").then((response) => {
+        const { email, permissions, roles, name } = response.data;
+
+        let formatedAvatar = `https://ui-avatars.com/api/?name=${name}`;
+        formatedAvatar = formatedAvatar.replace(" ", "+");
+
+        setAvatar(formatedAvatar);
+
+        setUser({
+          name,
+          email,
+          permissions,
+          roles,
+          avatar,
+        });
+      });
+    } else {
+      // deslogar
     }
+  }, []);
+
+  async function signIn({ email, password }: signInCredentials) {
+    try {
+      const response = await authApi.post("sessions", {
+        email,
+        password,
+      });
+
+      const { token, refreshToken, permissions, roles, name } = response.data;
+
+      setCookie(undefined, "dashgo.token", token, {
+        maxAge: 60 * 60 * 24 * 30, // 30 days
+        path: "/",
+      });
+      setCookie(undefined, "dashgo.refreshToken", refreshToken, {
+        maxAge: 60 * 60 * 24 * 30, // 30 days
+        path: "/",
+      });
+
+      let formatedAvatar = `https://ui-avatars.com/api/?name=${name}`;
+      formatedAvatar = formatedAvatar.replace(" ", "+");
+
+      setAvatar(formatedAvatar);
+
+      setUser({
+        name,
+        email,
+        permissions,
+        roles,
+        avatar,
+      });
+
+      authApi.defaults.headers["Authorization"] = `Bearer ${token}`;
+
+      if (response.status !== 401) router.push("/dashboard");
+    } catch (err) {
+      console.log("Error:", err);
+    }
+  }
 
   return (
-    <AuthContext.Provider value={{ signIn, isAuthenticated }}>
+    <AuthContext.Provider value={{ signIn, isAuthenticated, user }}>
       {children}
     </AuthContext.Provider>
   );

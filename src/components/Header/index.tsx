@@ -7,8 +7,6 @@ import { NotificationsNav } from "./NotificationsNav";
 import { Profile } from "./Profile";
 import { SearchBox } from "./SearchBox";
 
-import styles from "./styles.module.scss";
-
 export function Header() {
   const { onOpen } = useSidebarDrawer();
 

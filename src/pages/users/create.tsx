@@ -20,7 +20,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 
 import styles from "./styles.module.scss";
 import { useMutation } from "react-query";
-import { api } from "../../services/api";
+import { api } from "../../services/axios-api";
 import { queryClient } from "../../services/QueryClient";
 
 interface CreateUser {

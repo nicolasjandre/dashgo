@@ -8,7 +8,6 @@ import styles from "./styles.module.scss";
 import { Logo } from "../components/Header/Logo";
 import { useContext } from "react";
 import { AuthContext } from "../contexts/AuthContext";
-import { useRouter } from "next/router";
 
 type SignInFormData = {
   email: string;
@@ -24,19 +23,11 @@ const signInFormSchema = yup.object().shape({
     .required("E-mail é obrigatório.")
     .email("Digite um e-mail válido.")
     .matches(emailRegex, "Digite um e-mail válido."),
-  password: yup
-    .string()
-    .required("Senha é obrigatório.")
-    .min(6, "A senha precisa ter ao menos 6 caracteres.")
-    .matches(/[0-9]/, "A senha precisa ter um número.")
-    .matches(/[a-z]/, "A senha precisa ter uma letra minúscula.")
-    .matches(/[A-Z]/, "A senha precisa ter uma letra maiúscula."),
 });
 
 export default function SignIn() {
-  const router = useRouter()
-  const { signIn } = useContext(AuthContext)
-  
+  const { signIn } = useContext(AuthContext);
+
   const { register, handleSubmit, formState } = useForm<SignInFormData>({
     resolver: yupResolver(signInFormSchema),
   });
@@ -44,11 +35,7 @@ export default function SignIn() {
   const { errors } = formState;
 
   const handleSignIn: SubmitHandler<SignInFormData> = async (data) => {
-    const response = await signIn(data)
-    
-    if (response.token) {
-      router.push('/dashboard')
-    }
+    await signIn(data);
   };
 
   return (
