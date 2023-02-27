@@ -9,10 +9,9 @@ import {
   Button,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
-import { Input } from "../../components/Form/Input";
+import { Input } from "../components/Form/Input";
 
-import { Header } from "../../components/Header";
-import { Sidebar } from "../../components/Sidebar";
+import { Logo } from "../components/Header/Logo";
 
 import { SubmitHandler, useForm } from "react-hook-form";
 import * as yup from "yup";
@@ -20,9 +19,9 @@ import { yupResolver } from "@hookform/resolvers/yup";
 
 import styles from "./styles.module.scss";
 import { useMutation } from "react-query";
-import { api } from "../../services/axios-api";
-import { queryClient } from "../../services/QueryClient";
-import { SSRHandlePath } from "../../utils/SSRHandlePath";
+import { api } from "../services/axios-api";
+import { queryClient } from "../services/QueryClient";
+import { SSRHandlePath } from "../utils/SSRHandlePath";
 
 interface CreateUser {
   name: string;
@@ -91,10 +90,18 @@ export default function CreateUser() {
 
   return (
     <Box>
-      <Header />
-
-      <Flex w="100%" my="6" maxWidth={1480} mx="auto" px="6">
-        <Sidebar />
+      <Flex
+        justifyContent='center'
+        alignItems='center'
+        flexDir="column"
+        h="100%"
+        w="100%"
+        my="6"
+        maxWidth={1480}
+        mx="auto"
+        px="6"
+      >
+        <Logo p='16' />
 
         <Box
           className={styles.input}
@@ -102,6 +109,8 @@ export default function CreateUser() {
           borderRadius={8}
           bg="gray.800"
           p={["4", "6", "8"]}
+          w='95%'
+          maxWidth={1480}
         >
           <Heading size="lg" fontWeight="normal">
             Criar usuário
@@ -148,20 +157,20 @@ export default function CreateUser() {
             <HStack spacing="4">
               <Button
                 onClick={() => {
-                  router.push("/users");
+                  router.push("/");
                 }}
                 cursor="pointer"
                 as="a"
                 colorScheme="whiteAlpha"
               >
-                Cancelar
+                Voltar
               </Button>
               <Button
                 isLoading={formState.isSubmitting}
                 onClick={handleSubmit(handleCreateUser)}
                 colorScheme="red"
               >
-                Salvar
+                Criar
               </Button>
             </HStack>
           </Flex>

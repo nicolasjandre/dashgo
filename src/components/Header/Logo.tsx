@@ -8,7 +8,7 @@ export function Logo({ ...rest }) {
     <Text
       display='block'
       cursor="default"
-      fontSize={[asPath === '/' ? '5xl' : 'xl', asPath === '/' ? '5xl' : '3xl']}
+      fontSize={[asPath === '/' || asPath === '/register' ? '5xl' : 'xl', asPath === '/' || asPath === '/register' ? '5xl' : '3xl']}
       fontWeight="bold"
       letterSpacing="tight"
       {...rest}

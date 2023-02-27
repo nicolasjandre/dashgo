@@ -55,6 +55,7 @@ export function makeServer() {
         return new Response(200, { 'x-total-count': String(total) }, { users })
       }
       );
+      this.patch('/users/:id')
       this.get('/users/:id')
       this.post('/users');
       this.namespace = ''
@@ -62,11 +63,11 @@ export function makeServer() {
 
       if (typeof window !== "undefined") {
         const NativeXMLHttpRequest = window.XMLHttpRequest;
-        
+
         window.XMLHttpRequest = function XMLHttpRequest() {
           const request = new NativeXMLHttpRequest(arguments);
           delete request.onloadend;
-          return request;
+          return request; // necessary for axios work with mirage passthrough
         }
       }
     }

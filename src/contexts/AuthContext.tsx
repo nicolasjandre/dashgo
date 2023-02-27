@@ -1,5 +1,5 @@
-import { useRouter } from "next/router";
-import { setCookie, parseCookies } from "nookies";
+import router from "next/router";
+import { setCookie, parseCookies, destroyCookie } from "nookies";
 import { createContext, ReactNode, useEffect, useState } from "react";
 import { authApi } from "../services/axios-api";
 
@@ -28,8 +28,13 @@ type User = {
 
 export const AuthContext = createContext({} as AuthContextData);
 
+export function signOut() {
+  destroyCookie(undefined, "dashgo.token");
+  destroyCookie(undefined, "dashgo.refreshToken");
+  router.push("/");
+}
+
 export function AuthProvider({ children }: AuthProviderProps) {
-  const router = useRouter();
   const [avatar, setAvatar] = useState("");
   const [user, setUser] = useState<User | null>(null);
   const isAuthenticated = !!user;
@@ -38,24 +43,28 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const { "dashgo.token": token } = parseCookies();
 
     if (token) {
-      authApi.get("/me").then((response) => {
-        const { email, permissions, roles, name } = response.data;
+      authApi
+        .get("/me")
+        .then((response) => {
+          const { email, permissions, roles, name } = response.data;
 
-        let formatedAvatar = `https://ui-avatars.com/api/?name=${name}`;
-        formatedAvatar = formatedAvatar.replace(" ", "+");
+          let formatedAvatar = `https://ui-avatars.com/api/?name=${name}`;
+          formatedAvatar = formatedAvatar.replace(" ", "+");
 
-        setAvatar(formatedAvatar);
+          setAvatar(formatedAvatar);
 
-        setUser({
-          name,
-          email,
-          permissions,
-          roles,
-          avatar,
+          setUser({
+            name,
+            email,
+            permissions,
+            roles,
+            avatar,
+          });
+        })
+        .catch(() => {
+          signOut();
+          router.push('/')
         });
-      });
-    } else {
-      // deslogar
     }
   }, []);
 

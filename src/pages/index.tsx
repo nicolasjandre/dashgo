@@ -8,6 +8,8 @@ import styles from "./styles.module.scss";
 import { Logo } from "../components/Header/Logo";
 import { useContext } from "react";
 import { AuthContext } from "../contexts/AuthContext";
+import { GetServerSideProps } from "next";
+import { SSRHandlePath } from "../utils/SSRHandlePath";
 
 type SignInFormData = {
   email: string;
@@ -42,12 +44,12 @@ export default function SignIn() {
     <Flex
       flexDir="column"
       w="100vw"
-      h="80vh"
+      h="100%"
       align="center"
       justify="center"
       p={["4", "6"]}
     >
-      <Logo mb="12" />
+      <Logo p="16" />
 
       <Flex
         onSubmit={handleSubmit(handleSignIn)}
@@ -102,3 +104,9 @@ export default function SignIn() {
     </Flex>
   );
 }
+
+export const getServerSideProps = SSRHandlePath(async (ctx) => {
+  return {
+    props: {},
+  };
+});

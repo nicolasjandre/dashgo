@@ -21,6 +21,7 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import { RiAddLine, RiPencilLine } from "react-icons/ri";
 import { RxUpdate } from "react-icons/rx";
+import NextLink from "next/link";
 
 import { Header } from "../../components/Header";
 import { Pagination } from "../../components/Pagination";
@@ -28,6 +29,7 @@ import { Sidebar } from "../../components/Sidebar";
 import { api } from "../../services/axios-api";
 import { useUsers } from "../../services/hooks/useUsers";
 import { queryClient } from "../../services/QueryClient";
+import { SSRHandlePath } from "../../utils/SSRHandlePath";
 
 type User = {
   name: string;
@@ -152,12 +154,14 @@ export default function UserList() {
                             }
                             _hover={{ color: "purple.300" }}
                           >
-                            <Text
-                              fontWeight="bold"
-                              fontSize={["sm", "md", "lg"]}
-                            >
-                              {user.name}
-                            </Text>
+                            <NextLink href={`/users/${user.id}`}>
+                              <Text
+                                fontWeight="bold"
+                                fontSize={["sm", "md", "lg"]}
+                              >
+                                {user.name}
+                              </Text>
+                            </NextLink>
                           </Link>
                           <Text
                             w={[40, "auto"]}
@@ -179,6 +183,7 @@ export default function UserList() {
                           colorScheme="red"
                           leftIcon={<Icon as={RiPencilLine} fontSize="18" />}
                           iconSpacing={["0", "0", "0", "2"]}
+                          onClick={() => router.push(`/users/edit/${user.id}`)}
                         >
                           {isWideVersion ? "Editar" : ""}
                         </Button>
@@ -200,3 +205,9 @@ export default function UserList() {
     </Box>
   );
 }
+
+export const getServerSideProps = SSRHandlePath(async (ctx) => {
+  return {
+    props: {},
+  };
+});

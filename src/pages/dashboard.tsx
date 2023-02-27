@@ -5,6 +5,7 @@ import { ApexOptions } from "apexcharts";
 
 import { Header } from "../components/Header";
 import { Sidebar } from "../components/Sidebar";
+import { SSRHandlePath } from "../utils/SSRHandlePath";
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
@@ -104,3 +105,9 @@ export default function Dashboard() {
     </Flex>
   );
 }
+
+export const getServerSideProps = SSRHandlePath(async (ctx) => {
+  return {
+    props: {},
+  };
+});

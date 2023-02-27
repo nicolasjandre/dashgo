@@ -7,24 +7,29 @@ import {
   SimpleGrid,
   VStack,
   Button,
+  Text,
+  Spinner,
+  Icon,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
-import { Input } from "../../components/Form/Input";
+import { Input } from "../../../components/Form/Input";
 
-import { Header } from "../../components/Header";
-import { Sidebar } from "../../components/Sidebar";
+import { Header } from "../../../components/Header";
+import { Sidebar } from "../../../components/Sidebar";
 
 import { SubmitHandler, useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 
-import styles from "./styles.module.scss";
+import styles from "../styles.module.scss";
 import { useMutation } from "react-query";
-import { api } from "../../services/axios-api";
-import { queryClient } from "../../services/QueryClient";
-import { SSRHandlePath } from "../../utils/SSRHandlePath";
+import { api } from "../../../services/axios-api";
+import { queryClient } from "../../../services/QueryClient";
+import { SSRHandlePath } from "../../../utils/SSRHandlePath";
+import { useUser } from "../../../services/hooks/useUsers";
+import { RxUpdate } from "react-icons/rx";
 
-interface CreateUser {
+interface EditUser {
   name: string;
   email: string;
   password: string;
@@ -34,7 +39,7 @@ interface CreateUser {
 const emailRegex =
   /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
-const createUserFormSchema = yup.object().shape({
+const editUserFormSchema = yup.object().shape({
   name: yup.string().required("Nome é obrigatório."),
 
   email: yup
@@ -56,15 +61,17 @@ const createUserFormSchema = yup.object().shape({
     .oneOf(["", yup.ref("password")], "As senhas precisam ser idênticas."),
 });
 
-export default function CreateUser() {
+export default function EditUser() {
   const router = useRouter();
+  const userId = Number(router.query.userId);
 
-  const createUser = useMutation(
-    async (user: CreateUser) => {
-      const response = await api.post("users", {
+  const { user, response } = useUser(userId);
+
+  const editUser = useMutation(
+    async (user: EditUser) => {
+      const response = await api.patch(`users/${userId}`, {
         user: {
           ...user,
-          created_at: new Date(),
         },
       });
 
@@ -77,14 +84,14 @@ export default function CreateUser() {
     }
   );
 
-  const { register, handleSubmit, formState } = useForm<CreateUser>({
-    resolver: yupResolver(createUserFormSchema),
+  const { register, handleSubmit, formState } = useForm<EditUser>({
+    resolver: yupResolver(editUserFormSchema),
   });
 
   const { errors } = formState;
 
-  const handleCreateUser: SubmitHandler<CreateUser> = async (data) => {
-    await createUser.mutateAsync(data);
+  const handleEditUser: SubmitHandler<EditUser> = async (data) => {
+    await editUser.mutateAsync(data);
 
     router.push("/users");
   };
@@ -103,8 +110,33 @@ export default function CreateUser() {
           bg="gray.800"
           p={["4", "6", "8"]}
         >
-          <Heading size="lg" fontWeight="normal">
-            Criar usuário
+          <Heading
+            display="flex"
+            justifyContent="space-between"
+            size="lg"
+            fontWeight="normal"
+          >
+            <Text as="span" color="red.500">
+              <Text as="span" color="white">
+                Editando usuário:{" "}
+              </Text>
+              {user?.name}
+              {response.isFetching && (
+                <Spinner color="gray.500" ml="4" size="sm" />
+              )}
+            </Text>
+
+            <Button
+              onClick={() => response.refetch()}
+              cursor="pointer"
+              as="a"
+              size="sm"
+              fontSize="sm"
+              colorScheme="red"
+              leftIcon={<Icon as={RxUpdate} fontSize="16" />}
+            >
+              Atualizar
+            </Button>
           </Heading>
 
           <Divider my="6" borderColor="gray.700" />
@@ -122,7 +154,7 @@ export default function CreateUser() {
                 error={errors.email}
                 name="email"
                 type="email"
-                label="E-mail:"
+                label="Novo e-mail:"
               />
             </SimpleGrid>
 
@@ -131,7 +163,7 @@ export default function CreateUser() {
                 {...register("password")}
                 name="password"
                 type="password"
-                label="Senha:"
+                label="Nova senha:"
                 error={errors.password}
               />
               <Input
@@ -158,7 +190,7 @@ export default function CreateUser() {
               </Button>
               <Button
                 isLoading={formState.isSubmitting}
-                onClick={handleSubmit(handleCreateUser)}
+                onClick={handleSubmit(handleEditUser)}
                 colorScheme="red"
               >
                 Salvar
