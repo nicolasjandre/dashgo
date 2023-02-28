@@ -48,7 +48,16 @@ export async function getUsers(page: number): Promise<GetUsersResponse> {
 export async function getUser(userId: number): Promise<GetUserResponse> {
     const { data } = await api.get(`/users/${userId}`)
 
-    const user = data.user
+    const user = {
+        id: data.user.id,
+        name: data.user.name,
+        email: data.user.email,
+        created_at: new Date(data.user.created_at).toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric',
+        }),
+    }
 
     return {
         user,

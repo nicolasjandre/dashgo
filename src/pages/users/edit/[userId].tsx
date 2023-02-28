@@ -25,9 +25,10 @@ import styles from "../styles.module.scss";
 import { useMutation } from "react-query";
 import { api } from "../../../services/axios-api";
 import { queryClient } from "../../../services/QueryClient";
-import { SSRHandlePath } from "../../../utils/SSRHandlePath";
 import { useUser } from "../../../services/hooks/useUsers";
 import { RxUpdate } from "react-icons/rx";
+import { getSession, withPageAuthRequired } from "@auth0/nextjs-auth0";
+import { GetServerSideProps } from "next";
 
 interface EditUser {
   name: string;
@@ -112,17 +113,60 @@ export default function EditUser() {
         >
           <Heading
             display="flex"
-            justifyContent="space-between"
+            flexDir={["column", "column", "row"]}
+            justifyContent={["center", "center", "space-between"]}
+            alignItems={["center"]}
             size="lg"
             fontWeight="normal"
           >
-            <Text as="span" color="red.500">
-              <Text as="span" color="white">
-                Editando usuário:{" "}
-              </Text>
+            <Text
+              display={["inline", "inline", "none"]}
+              as="span"
+              color="white"
+              align="center"
+            >
+              Editando usuário:{" "}
+            </Text>
+            <Text
+              display={["inline", "inline", "none"]}
+              as="span"
+              color="red.500"
+              align="center"
+            >
               {user?.name}
+
               {response.isFetching && (
-                <Spinner color="gray.500" ml="4" size="sm" />
+                <Spinner
+                  display={["block", "block", "none"]}
+                  color="gray.500"
+                  ml="4"
+                  size="sm"
+                />
+              )}
+            </Text>
+
+            <Text
+              display={["none", "none", "inline"]}
+              as="span"
+              color="white"
+              align="center"
+            >
+              Editando usuário:{" "}
+              <Text
+                display={["none", "none", "inline"]}
+                as="span"
+                color="red.500"
+                align="center"
+              >
+                {user?.name}
+              </Text>
+              {response.isFetching && (
+                <Spinner
+                  display={["none", "none", "block"]}
+                  color="gray.500"
+                  ml="4"
+                  size="sm"
+                />
               )}
             </Text>
 
@@ -134,6 +178,8 @@ export default function EditUser() {
               fontSize="sm"
               colorScheme="red"
               leftIcon={<Icon as={RxUpdate} fontSize="16" />}
+              maxW="260px"
+              mt={['4', '4', '0']}
             >
               Atualizar
             </Button>
@@ -180,7 +226,7 @@ export default function EditUser() {
             <HStack spacing="4">
               <Button
                 onClick={() => {
-                  router.push("/users");
+                  router.back();
                 }}
                 cursor="pointer"
                 as="a"
@@ -203,8 +249,20 @@ export default function EditUser() {
   );
 }
 
-export const getServerSideProps = SSRHandlePath(async (ctx) => {
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  const response = await getSession(ctx.req, ctx.res);
+  const session = JSON.parse(JSON.stringify(response));
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
   return {
     props: {},
   };
-});
+};

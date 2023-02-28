@@ -4,6 +4,7 @@ import { RiSearchLine } from "react-icons/ri";
 export function SearchBox() {
   return (
     <Flex
+      display={['none', 'none', 'none', 'flex']}
       as="label"
       flex="1"
       py="4"

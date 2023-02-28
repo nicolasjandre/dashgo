@@ -5,7 +5,8 @@ import { ApexOptions } from "apexcharts";
 
 import { Header } from "../components/Header";
 import { Sidebar } from "../components/Sidebar";
-import { SSRHandlePath } from "../utils/SSRHandlePath";
+import { getSession } from "@auth0/nextjs-auth0";
+import { GetServerSideProps } from "next";
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
@@ -106,8 +107,20 @@ export default function Dashboard() {
   );
 }
 
-export const getServerSideProps = SSRHandlePath(async (ctx) => {
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  const response = await getSession(ctx.req, ctx.res);
+  const session = JSON.parse(JSON.stringify(response));
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
   return {
     props: {},
   };
-});
+};

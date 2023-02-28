@@ -7,6 +7,7 @@ import { SidebarDrawerProvider } from "../contexts/SidebarDrawerContext";
 import { makeServer } from "../services/mirage";
 import { QueryClientProvider } from "react-query";
 import { queryClient } from "../services/QueryClient";
+import { UserProvider } from '@auth0/nextjs-auth0/client';
 import { AuthProvider } from "../contexts/AuthContext";
 
 if (process.env.NODE_ENV === "development") {
@@ -15,15 +16,17 @@ if (process.env.NODE_ENV === "development") {
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <AuthProvider>
-      <QueryClientProvider client={queryClient}>
-        <ChakraProvider theme={theme}>
-          <SidebarDrawerProvider>
-            <Component {...pageProps} />
-          </SidebarDrawerProvider>
-        </ChakraProvider>
-        <ReactQueryDevtools />
-      </QueryClientProvider>
-    </AuthProvider>
+    <UserProvider>
+      <AuthProvider>
+        <QueryClientProvider client={queryClient}>
+          <ChakraProvider theme={theme}>
+            <SidebarDrawerProvider>
+              <Component {...pageProps} />
+            </SidebarDrawerProvider>
+          </ChakraProvider>
+          <ReactQueryDevtools />
+        </QueryClientProvider>
+      </AuthProvider>
+    </UserProvider>
   );
 }

@@ -15,7 +15,6 @@ import {
   useBreakpointValue,
   Spinner,
   HStack,
-  Link,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -29,7 +28,8 @@ import { Sidebar } from "../../components/Sidebar";
 import { api } from "../../services/axios-api";
 import { useUsers } from "../../services/hooks/useUsers";
 import { queryClient } from "../../services/QueryClient";
-import { SSRHandlePath } from "../../utils/SSRHandlePath";
+import { getSession } from "@auth0/nextjs-auth0";
+import { GetServerSideProps } from "next";
 
 type User = {
   name: string;
@@ -80,7 +80,7 @@ export default function UserList() {
 
         <Box flex="1" borderRadius={8} bg="gray.800" p={["4", "6"]}>
           <Flex
-            direction={isWideVersion ? "row" : "column"}
+            direction={['column', 'column', 'column', 'row']}
             mb="8"
             justify="space-between"
             align="center"
@@ -148,21 +148,18 @@ export default function UserList() {
                       </Td>
                       <Td p={["2", "4", "6"]}>
                         <Box>
-                          <Link
-                            onMouseEnter={() =>
-                              handlePrefetchUser(Number(user.id))
-                            }
-                            _hover={{ color: "purple.300" }}
-                          >
-                            <NextLink href={`/users/${user.id}`}>
-                              <Text
-                                fontWeight="bold"
-                                fontSize={["sm", "md", "lg"]}
-                              >
-                                {user.name}
-                              </Text>
-                            </NextLink>
-                          </Link>
+                          <NextLink href={`/users/${user.id}`}>
+                            <Text
+                              onMouseEnter={() =>
+                                handlePrefetchUser(Number(user.id))
+                              }
+                              fontWeight="bold"
+                              fontSize={["sm", "md", "lg"]}
+                              _hover={{ color: "purple.300" }}
+                            >
+                              {user.name}
+                            </Text>
+                          </NextLink>
                           <Text
                             w={[40, "auto"]}
                             isTruncated
@@ -206,8 +203,20 @@ export default function UserList() {
   );
 }
 
-export const getServerSideProps = SSRHandlePath(async (ctx) => {
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  const response = await getSession(ctx.req, ctx.res);
+  const session = JSON.parse(JSON.stringify(response));
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
   return {
     props: {},
   };
-});
+};

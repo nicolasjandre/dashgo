@@ -1,7 +1,10 @@
 import { HStack, Icon } from "@chakra-ui/react";
-import { RiNotificationLine, RiUserAddLine } from "react-icons/ri";
+import { useRouter } from "next/router";
+import { RiProfileLine, RiLogoutBoxLine } from "react-icons/ri";
 
 export function NotificationsNav() {
+  const route = useRouter()
+
   return (
     <HStack
       spacing="4"
@@ -12,8 +15,8 @@ export function NotificationsNav() {
       borderRightWidth={1}
       borderColor="gray.700"
     >
-      <Icon as={RiNotificationLine} fontSize={[16, 20]} />
-      <Icon as={RiUserAddLine} fontSize={[16, 20]} />
+      <Icon cursor='pointer' onClick={() => {}} as={RiProfileLine} fontSize={[16, 20]} />
+      <Icon cursor='pointer' onClick={() => route.push('/api/auth/logout')} as={RiLogoutBoxLine} fontSize={[16, 20]} />
     </HStack>
   );
 }

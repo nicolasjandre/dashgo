@@ -1,3 +1,4 @@
+import { AxiosError } from "axios";
 import router from "next/router";
 import { setCookie, parseCookies, destroyCookie } from "nookies";
 import { createContext, ReactNode, useEffect, useState } from "react";
@@ -21,7 +22,6 @@ type AuthContextData = {
 type User = {
   name: string;
   email: string;
-  avatar: string;
   permissions: string[];
   roles: string[];
 } | null;
@@ -35,7 +35,6 @@ export function signOut() {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [avatar, setAvatar] = useState("");
   const [user, setUser] = useState<User | null>(null);
   const isAuthenticated = !!user;
 
@@ -48,22 +47,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
         .then((response) => {
           const { email, permissions, roles, name } = response.data;
 
-          let formatedAvatar = `https://ui-avatars.com/api/?name=${name}`;
-          formatedAvatar = formatedAvatar.replace(" ", "+");
-
-          setAvatar(formatedAvatar);
-
           setUser({
             name,
             email,
             permissions,
             roles,
-            avatar,
           });
         })
         .catch(() => {
           signOut();
-          router.push('/')
+          router.push("/");
         });
     }
   }, []);
@@ -86,24 +79,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
         path: "/",
       });
 
-      let formatedAvatar = `https://ui-avatars.com/api/?name=${name}`;
-      formatedAvatar = formatedAvatar.replace(" ", "+");
-
-      setAvatar(formatedAvatar);
-
       setUser({
         name,
         email,
         permissions,
         roles,
-        avatar,
       });
 
       authApi.defaults.headers["Authorization"] = `Bearer ${token}`;
 
-      if (response.status !== 401) router.push("/dashboard");
-    } catch (err) {
-      console.log("Error:", err);
+      if (response.status !== 401) {
+        alert('Bem vindo!')
+        router.push("/dashboard");
+      }
+
+    } catch (err: AxiosError | any) {
+      if (err.response.data.message === "E-mail or password incorrect.") {
+        throw new Error("E-mail ou senha incorretos.");
+      }
+      throw new Error("Erro ao realizar login.");
     }
   }
 

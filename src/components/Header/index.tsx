@@ -12,7 +12,7 @@ export function Header() {
 
   const isWideVersion = useBreakpointValue({
     base: false,
-    lg: true,
+    md: true
   });
 
   return (
@@ -38,11 +38,11 @@ export function Header() {
         />
       )}
       <Logo />
-      {isWideVersion && <SearchBox />}
+      <SearchBox />
 
       <Flex ml="auto" align="center">
         <NotificationsNav />
-        <Profile showProfileData={isWideVersion} />
+        <Profile />
       </Flex>
     </Flex>
   );

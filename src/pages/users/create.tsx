@@ -22,7 +22,8 @@ import styles from "./styles.module.scss";
 import { useMutation } from "react-query";
 import { api } from "../../services/axios-api";
 import { queryClient } from "../../services/QueryClient";
-import { SSRHandlePath } from "../../utils/SSRHandlePath";
+import { getSession } from "@auth0/nextjs-auth0";
+import { GetServerSideProps } from "next";
 
 interface CreateUser {
   name: string;
@@ -171,8 +172,20 @@ export default function CreateUser() {
   );
 }
 
-export const getServerSideProps = SSRHandlePath(async (ctx) => {
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  const response = await getSession(ctx.req, ctx.res);
+  const session = JSON.parse(JSON.stringify(response));
+
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
   return {
     props: {},
   };
-});
+};
