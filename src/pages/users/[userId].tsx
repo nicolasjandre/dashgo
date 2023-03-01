@@ -18,17 +18,19 @@ import { Sidebar } from "../../components/Sidebar";
 
 import styles from "../styles.module.scss";
 
-import { useUser } from "../../services/hooks/useUsers";
 import { RxUpdate } from "react-icons/rx";
 import { RiPencilLine } from "react-icons/ri";
-import { getSession, withPageAuthRequired } from "@auth0/nextjs-auth0";
+import { getSession } from "@auth0/nextjs-auth0";
 import { GetServerSideProps } from "next";
+import { useUser } from "../../services/hooks/useUser";
 
 export default function EditUser() {
   const router = useRouter();
-  const userId = Number(router.query.userId);
+  const userId = String(router.query.userId);
 
-  const { user, response } = useUser(userId);
+  const { data, isFetching, refetch } = useUser(userId);
+
+  console.log(data)
 
   return (
     <Box>
@@ -51,17 +53,17 @@ export default function EditUser() {
             fontWeight="normal"
           >
             <Flex alignItems="center" gap="3">
-              <Avatar size={["sm", "md"]} name={user?.name} />
+              <Avatar size={["sm", "md"]} name={data?.user?.name} />
               <Text fontSize={["16", "20", "26"]} as="span" color="red.500">
-                {user?.name}
-                {response.isFetching && (
+                {data?.user?.name}
+                {isFetching && (
                   <Spinner color="gray.500" ml="4" size="sm" />
                 )}
               </Text>
             </Flex>
 
             <Button
-              onClick={() => response.refetch()}
+              onClick={() => refetch()}
               cursor="pointer"
               as="a"
               size="sm"
@@ -78,22 +80,32 @@ export default function EditUser() {
           <Stack spacing="4">
             <Box>
               <Text as="strong">Nome: </Text>
-              <Text as="span">{user?.name}</Text>
+              <Text as="span">{data?.user?.name}</Text>
             </Box>
 
             <Box>
               <Text as="strong">E-mail: </Text>
-              <Text as="span">{user?.email}</Text>
+              <Text as="span">{data?.user?.email}</Text>
             </Box>
 
             <Box>
               <Text as="strong">Gênero: </Text>
-              <Text as="span">{}</Text>
+              <Text as="span">{data?.user?.sex}</Text>
+            </Box>
+
+            <Box>
+              <Text as="strong">Profissão: </Text>
+              <Text as="span">{data?.user?.profession}</Text>
             </Box>
 
             <Box>
               <Text as="strong">Cadastro: </Text>
-              <Text as="span">{user?.created_at}</Text>
+              <Text as="span">{data?.user?.created_at}</Text>
+            </Box>
+
+            <Box>
+              <Text as="strong">Editado em: </Text>
+              <Text as="span">{data?.user?.updated_at}</Text>
             </Box>
           </Stack>
 

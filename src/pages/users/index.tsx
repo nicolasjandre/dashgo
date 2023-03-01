@@ -25,18 +25,10 @@ import NextLink from "next/link";
 import { Header } from "../../components/Header";
 import { Pagination } from "../../components/Pagination";
 import { Sidebar } from "../../components/Sidebar";
-import { api } from "../../services/axios-api";
 import { useUsers } from "../../services/hooks/useUsers";
-import { queryClient } from "../../services/QueryClient";
 import { getSession } from "@auth0/nextjs-auth0";
 import { GetServerSideProps } from "next";
-
-type User = {
-  name: string;
-  email: string;
-  id: string;
-  created_at: string;
-};
+import { useUserPrefetch } from "../../services/hooks/useUser";
 
 export default function UserList() {
   const [page, setPage] = useState(1);
@@ -58,19 +50,6 @@ export default function UserList() {
     window.scrollTo({ top: 0 });
   }
 
-  async function handlePrefetchUser(userId: number) {
-    await queryClient.prefetchQuery(
-      ["users", userId],
-      async () => {
-        const response = await api.get(`users/${userId}`);
-        return response.data;
-      },
-      {
-        staleTime: 1000 * 60 * 10, // 10 min
-      }
-    );
-  }
-
   return (
     <Box>
       <Header />
@@ -80,7 +59,7 @@ export default function UserList() {
 
         <Box flex="1" borderRadius={8} bg="gray.800" p={["4", "6"]}>
           <Flex
-            direction={['column', 'column', 'column', 'row']}
+            direction={["column", "column", "column", "row"]}
             mb="8"
             justify="space-between"
             align="center"
@@ -141,7 +120,7 @@ export default function UserList() {
                   </Tr>
                 </Thead>
                 <Tbody>
-                  {data?.users?.map((user: User) => (
+                  {data?.users?.map((user) => (
                     <Tr key={user.id}>
                       <Td px={["2", "4", "6"]}>
                         <Checkbox colorScheme="red" />
@@ -151,7 +130,7 @@ export default function UserList() {
                           <NextLink href={`/users/${user.id}`}>
                             <Text
                               onMouseEnter={() =>
-                                handlePrefetchUser(Number(user.id))
+                                useUserPrefetch(String(user.id))
                               }
                               fontWeight="bold"
                               fontSize={["sm", "md", "lg"]}
@@ -180,7 +159,9 @@ export default function UserList() {
                           colorScheme="red"
                           leftIcon={<Icon as={RiPencilLine} fontSize="18" />}
                           iconSpacing={["0", "0", "0", "2"]}
-                          onClick={() => router.push(`/users/edit/${user.id}`)}
+                          onClick={() =>
+                            router.push(`/users/edit/${user.id}`)
+                          }
                         >
                           {isWideVersion ? "Editar" : ""}
                         </Button>
@@ -191,7 +172,7 @@ export default function UserList() {
               </Table>
 
               <Pagination
-                totalCountOfRegisters={data!.totalCount}
+                totalCountOfRegisters={data?.totalCount!}
                 currentPage={page}
                 onPageChange={onPageChange}
               />

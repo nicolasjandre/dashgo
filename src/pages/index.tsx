@@ -2,12 +2,12 @@ import { Flex, Text, Button } from "@chakra-ui/react";
 
 import { Logo } from "../components/Header/Logo";
 import route from "next/router";
-import { useUser } from "@auth0/nextjs-auth0/client";
+import { useUser as useAuth0User } from "@auth0/nextjs-auth0/client";
 import { getSession } from "@auth0/nextjs-auth0";
 import { GetServerSideProps } from "next";
 
 export default function SignIn() {
-  const { isLoading } = useUser();
+  const { isLoading } = useAuth0User();
 
   return (
     <Flex

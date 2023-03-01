@@ -7,6 +7,8 @@ import {
   SimpleGrid,
   VStack,
   Button,
+  FormLabel,
+  Select,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { Input } from "../../components/Form/Input";
@@ -21,15 +23,15 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import styles from "./styles.module.scss";
 import { useMutation } from "react-query";
 import { api } from "../../services/axios-api";
-import { queryClient } from "../../services/QueryClient";
+import { queryClient } from "../../services/ReactQueryClient";
 import { getSession } from "@auth0/nextjs-auth0";
 import { GetServerSideProps } from "next";
 
 interface CreateUser {
   name: string;
   email: string;
-  password: string;
-  password_confirmation: string;
+  sex: string;
+  profession: string;
 }
 
 const emailRegex =
@@ -43,18 +45,6 @@ const createUserFormSchema = yup.object().shape({
     .required("E-mail é obrigatório.")
     .email("Digite um e-mail válido.")
     .matches(emailRegex, "Digite um e-mail válido."),
-
-  password: yup
-    .string()
-    .required("Senha é obrigatório.")
-    .min(6, "A senha precisa ter ao menos 6 caracteres.")
-    .matches(/[0-9]/, "A senha precisa ter um número.")
-    .matches(/[a-z]/, "A senha precisa ter uma letra minúscula.")
-    .matches(/[A-Z]/, "A senha precisa ter uma letra maiúscula."),
-
-  password_confirmation: yup
-    .string()
-    .oneOf(["", yup.ref("password")], "As senhas precisam ser idênticas."),
 });
 
 export default function CreateUser() {
@@ -62,14 +52,16 @@ export default function CreateUser() {
 
   const createUser = useMutation(
     async (user: CreateUser) => {
-      const response = await api.post("users", {
-        user: {
-          ...user,
-          created_at: new Date(),
-        },
+      const response = await api.post("users/create", {
+        name: user.name,
+        email: user.email,
+        sex: user.sex,
+        profession: user.profession,
+        created_at: new Date(),
+        updated_at: new Date(),
       });
 
-      return response.data.user;
+      return response.data;
     },
     {
       onSuccess: () => {
@@ -78,17 +70,24 @@ export default function CreateUser() {
     }
   );
 
+  const handleCreateUser: SubmitHandler<CreateUser> = async (data) => {
+    try {
+      await createUser.mutateAsync(data);
+    } catch (error: any) {
+      if (error?.response?.status === 409) {
+        return alert(error?.response?.data);
+      }
+      return console.error(error?.response?.data);
+    }
+    alert('Usuário cadastrado com sucesso!')
+    router.push("/users");
+  };
+
   const { register, handleSubmit, formState } = useForm<CreateUser>({
     resolver: yupResolver(createUserFormSchema),
   });
 
   const { errors } = formState;
-
-  const handleCreateUser: SubmitHandler<CreateUser> = async (data) => {
-    await createUser.mutateAsync(data);
-
-    router.push("/users");
-  };
 
   return (
     <Box>
@@ -116,6 +115,7 @@ export default function CreateUser() {
                 {...register("name")}
                 error={errors.name}
                 name="name"
+                type="text"
                 label="Nome completo:"
               />
               <Input
@@ -128,19 +128,37 @@ export default function CreateUser() {
             </SimpleGrid>
 
             <SimpleGrid minChildWidth="220px" spacing="8" w="100%">
+            <Box>
+                <FormLabel htmlFor="sex">Gênero: </FormLabel>
+                <Select
+                  name="sex"
+                  id="sex"
+                  variant="filled"
+                  bgColor="gray.900"
+                  borderColor="gray.900"
+                  focusBorderColor="red.500"
+                  _hover={{ bgColor: "gray.900" }}
+                  _focus={{ bgColor: "gray.900" }}
+                  size="lg"
+                >
+                  <option style={{ background: "#181B23" }} value="M">
+                    Masculino
+                  </option>
+                  <option style={{ background: "#181B23" }} value="F">
+                    Feminino
+                  </option>
+                  <option style={{ background: "#181B23" }} value="P">
+                    Prefiro não responder
+                  </option>
+                </Select>
+              </Box>
+              
               <Input
-                {...register("password")}
-                name="password"
-                type="password"
-                label="Senha:"
-                error={errors.password}
-              />
-              <Input
-                {...register("password_confirmation")}
-                name="password_confirmation"
-                type="password"
-                label="Confirmar senha:"
-                error={errors.password_confirmation}
+                {...register("profession")}
+                name="profession"
+                type="text"
+                label="Profissão:"
+                error={errors.profession}
               />
             </SimpleGrid>
           </VStack>

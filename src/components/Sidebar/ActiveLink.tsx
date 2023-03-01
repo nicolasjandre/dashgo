@@ -10,7 +10,7 @@ export function ActiveLink({ children, ...rest }: ActiveLinkProps) {
   let { asPath } = useRouter();
   let isActive = false;
 
-  if (asPath === (String(rest.href))) isActive = true;
+  if (asPath.includes((String(rest.href)))) isActive = true;
 
   return (
     <Link {...rest}>

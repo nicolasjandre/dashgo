@@ -10,6 +10,8 @@ import {
   Text,
   Spinner,
   Icon,
+  FormLabel,
+  Select
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { Input } from "../../../components/Form/Input";
@@ -24,17 +26,17 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import styles from "../styles.module.scss";
 import { useMutation } from "react-query";
 import { api } from "../../../services/axios-api";
-import { queryClient } from "../../../services/QueryClient";
-import { useUser } from "../../../services/hooks/useUsers";
+import { queryClient } from "../../../services/ReactQueryClient";
+import { useUser } from "../../../services/hooks/useUser";
 import { RxUpdate } from "react-icons/rx";
-import { getSession, withPageAuthRequired } from "@auth0/nextjs-auth0";
+import { getSession } from "@auth0/nextjs-auth0";
 import { GetServerSideProps } from "next";
 
 interface EditUser {
   name: string;
   email: string;
-  password: string;
-  password_confirmation: string;
+  sex: string;
+  profession: string;
 }
 
 const emailRegex =
@@ -48,31 +50,27 @@ const editUserFormSchema = yup.object().shape({
     .required("E-mail é obrigatório.")
     .email("Digite um e-mail válido.")
     .matches(emailRegex, "Digite um e-mail válido."),
-
-  password: yup
-    .string()
-    .required("Senha é obrigatório.")
-    .min(6, "A senha precisa ter ao menos 6 caracteres.")
-    .matches(/[0-9]/, "A senha precisa ter um número.")
-    .matches(/[a-z]/, "A senha precisa ter uma letra minúscula.")
-    .matches(/[A-Z]/, "A senha precisa ter uma letra maiúscula."),
-
-  password_confirmation: yup
-    .string()
-    .oneOf(["", yup.ref("password")], "As senhas precisam ser idênticas."),
 });
 
 export default function EditUser() {
   const router = useRouter();
-  const userId = Number(router.query.userId);
+  const userId = String(router.query.userId);
 
-  const { user, response } = useUser(userId);
+  const { data, isFetching, refetch } = useUser(userId);
+
+  const { register, handleSubmit, formState } = useForm<EditUser>({
+    resolver: yupResolver(editUserFormSchema),
+  });
 
   const editUser = useMutation(
     async (user: EditUser) => {
-      const response = await api.patch(`users/${userId}`, {
+      const response = await api.patch(`users/update`, {
         user: {
-          ...user,
+          name: user?.name,
+          email: user?.email,
+          sex: user?.sex,
+          profession: user?.profession,
+          id: userId,
         },
       });
 
@@ -84,16 +82,18 @@ export default function EditUser() {
       },
     }
   );
-
-  const { register, handleSubmit, formState } = useForm<EditUser>({
-    resolver: yupResolver(editUserFormSchema),
-  });
-
   const { errors } = formState;
 
   const handleEditUser: SubmitHandler<EditUser> = async (data) => {
-    await editUser.mutateAsync(data);
-
+    try {
+      await editUser.mutateAsync(data);
+    } catch (error: any) {
+      if (error?.response?.status === 409) {
+        return alert(error?.response?.data);
+      }
+      return console.error(error?.response?.data);
+    }
+    alert("Usuário editado com sucesso!");
     router.push("/users");
   };
 
@@ -133,9 +133,9 @@ export default function EditUser() {
               color="red.500"
               align="center"
             >
-              {user?.name}
+              {data?.user?.name}
 
-              {response.isFetching && (
+              {isFetching && (
                 <Spinner
                   display={["block", "block", "none"]}
                   color="gray.500"
@@ -158,9 +158,9 @@ export default function EditUser() {
                 color="red.500"
                 align="center"
               >
-                {user?.name}
+                {data?.user?.name}
               </Text>
-              {response.isFetching && (
+              {isFetching && (
                 <Spinner
                   display={["none", "none", "block"]}
                   color="gray.500"
@@ -171,7 +171,7 @@ export default function EditUser() {
             </Text>
 
             <Button
-              onClick={() => response.refetch()}
+              onClick={() => refetch()}
               cursor="pointer"
               as="a"
               size="sm"
@@ -179,7 +179,7 @@ export default function EditUser() {
               colorScheme="red"
               leftIcon={<Icon as={RxUpdate} fontSize="16" />}
               maxW="260px"
-              mt={['4', '4', '0']}
+              mt={["4", "4", "0"]}
             >
               Atualizar
             </Button>
@@ -205,19 +205,37 @@ export default function EditUser() {
             </SimpleGrid>
 
             <SimpleGrid minChildWidth="220px" spacing="8" w="100%">
+              <Box>
+                <FormLabel htmlFor="sex">Gênero: </FormLabel>
+                <Select
+                  name="sex"
+                  id="sex"
+                  variant="filled"
+                  bgColor="gray.900"
+                  borderColor="gray.900"
+                  focusBorderColor="red.500"
+                  _hover={{ bgColor: "gray.900" }}
+                  _focus={{ bgColor: "gray.900" }}
+                  size="lg"
+                >
+                  <option style={{ background: "#181B23" }} value="M">
+                    Masculino
+                  </option>
+                  <option style={{ background: "#181B23" }} value="F">
+                    Feminino
+                  </option>
+                  <option style={{ background: "#181B23" }} value="P">
+                    Prefiro não responder
+                  </option>
+                </Select>
+              </Box>
+
               <Input
-                {...register("password")}
-                name="password"
-                type="password"
-                label="Nova senha:"
-                error={errors.password}
-              />
-              <Input
-                {...register("password_confirmation")}
-                name="password_confirmation"
-                type="password"
-                label="Confirmar senha:"
-                error={errors.password_confirmation}
+                {...register("profession")}
+                name="profession"
+                type="text"
+                label="Profissão:"
+                error={errors.profession}
               />
             </SimpleGrid>
           </VStack>

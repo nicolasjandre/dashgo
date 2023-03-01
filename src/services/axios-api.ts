@@ -1,6 +1,5 @@
 import axios, { AxiosError } from 'axios';
 import { setCookie, parseCookies } from "nookies";
-import { signOut } from '../contexts/AuthContext';
 
 let cookies = parseCookies();
 let isRefreshing: boolean = false;
@@ -21,7 +20,7 @@ authApi.interceptors.response.use(response => {
     return response;
 }, (error: AxiosError) => {
     if (error.response?.status === 401) {
-        if (error.response.data?.code === 'token.expired') {
+        if (error.response.data === 'token.expired') {
             cookies = parseCookies();
 
             const { "dashgo.refreshToken": refreshToken } = parseCookies();
@@ -71,7 +70,7 @@ authApi.interceptors.response.use(response => {
         }
 
     } else {
-        signOut()
+ //       signOut()
     }
 
     return Promise.reject(error)
