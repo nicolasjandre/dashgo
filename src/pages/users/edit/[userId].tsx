@@ -25,12 +25,13 @@ import { yupResolver } from "@hookform/resolvers/yup";
 
 import styles from "../../../styles/styles.module.scss";
 import { useMutation } from "react-query";
-import { api } from "../../../services/axios-api";
+import { api } from "../../../services/axios";
 import { queryClient } from "../../../services/ReactQueryClient";
 import { useUser } from "../../../hooks/useUser";
 import { RxUpdate } from "react-icons/rx";
 import { getSession } from "@auth0/nextjs-auth0";
 import { GetServerSideProps } from "next";
+import { NextSeo } from "next-seo";
 
 interface EditUser {
   name: string;
@@ -102,176 +103,179 @@ export default function EditUser() {
   };
 
   return (
-    <Box>
-      <Header />
+    <>
+      <NextSeo title={`Editar | ${data?.user?.name}`} />
+      <Box>
+        <Header />
 
-      <Flex w="100%" my="6" maxWidth={1480} mx="auto" px="6">
-        <Sidebar />
+        <Flex w="100%" my="6" maxWidth={1480} mx="auto" px="6">
+          <Sidebar />
 
-        <Box
-          className={styles.input}
-          flex="1"
-          borderRadius={8}
-          bg="gray.800"
-          p={["4", "6", "8"]}
-        >
-          <Heading
-            display="flex"
-            flexDir={["column", "column", "row"]}
-            justifyContent={["center", "center", "space-between"]}
-            alignItems={["center"]}
-            size="lg"
-            fontWeight="normal"
+          <Box
+            className={styles.input}
+            flex="1"
+            borderRadius={8}
+            bg="gray.800"
+            p={["4", "6", "8"]}
           >
-            <Text
-              display={["inline", "inline", "none"]}
-              as="span"
-              color="white"
-              align="center"
+            <Heading
+              display="flex"
+              flexDir={["column", "column", "row"]}
+              justifyContent={["center", "center", "space-between"]}
+              alignItems={["center"]}
+              size="lg"
+              fontWeight="normal"
             >
-              Editando usuário:{" "}
-            </Text>
-            <Text
-              display={["inline", "inline", "none"]}
-              as="span"
-              color="red.500"
-              align="center"
-            >
-              {data?.user?.name}
-
-              {isFetching && (
-                <Spinner
-                  display={["block", "block", "none"]}
-                  color="gray.500"
-                  ml="4"
-                  size="sm"
-                />
-              )}
-            </Text>
-
-            <Text
-              display={["none", "none", "inline"]}
-              as="span"
-              color="white"
-              align="center"
-            >
-              Editando usuário:{" "}
               <Text
-                display={["none", "none", "inline"]}
+                display={["inline", "inline", "none"]}
+                as="span"
+                color="white"
+                align="center"
+              >
+                Editando usuário:{" "}
+              </Text>
+              <Text
+                display={["inline", "inline", "none"]}
                 as="span"
                 color="red.500"
                 align="center"
               >
                 {data?.user?.name}
+
+                {isFetching && (
+                  <Spinner
+                    display={["block", "block", "none"]}
+                    color="gray.500"
+                    ml="4"
+                    size="sm"
+                  />
+                )}
               </Text>
-              {isFetching && (
-                <Spinner
-                  display={["none", "none", "block"]}
-                  color="gray.500"
-                  ml="4"
-                  size="sm"
-                />
-              )}
-            </Text>
 
-            <Button
-              onClick={() => refetch()}
-              cursor="pointer"
-              as="a"
-              size="sm"
-              fontSize="sm"
-              colorScheme="red"
-              leftIcon={<Icon as={RxUpdate} fontSize="16" />}
-              maxW="260px"
-              mt={["4", "4", "0"]}
-            >
-              Atualizar
-            </Button>
-          </Heading>
-
-          <Divider my="6" borderColor="gray.700" />
-
-          <VStack spacing="8">
-            <SimpleGrid minChildWidth="220px" spacing="8" w="100%">
-              <Input
-                {...register("name")}
-                error={errors.name}
-                name="name"
-                label="Nome completo:"
-              />
-              <Input
-                {...register("email")}
-                error={errors.email}
-                name="email"
-                type="email"
-                label="Novo e-mail:"
-              />
-            </SimpleGrid>
-
-            <SimpleGrid minChildWidth="220px" spacing="8" w="100%">
-              <Box>
-                <FormLabel htmlFor="sex">Gênero: </FormLabel>
-                <Select
-                  {...register("sex")}
-                  name="sex"
-                  id="sex"
-                  variant="filled"
-                  bgColor="gray.900"
-                  borderColor="gray.900"
-                  focusBorderColor="red.500"
-                  _hover={{ bgColor: "gray.900" }}
-                  _focus={{ bgColor: "gray.900" }}
-                  size="lg"
+              <Text
+                display={["none", "none", "inline"]}
+                as="span"
+                color="white"
+                align="center"
+              >
+                Editando usuário:{" "}
+                <Text
+                  display={["none", "none", "inline"]}
+                  as="span"
+                  color="red.500"
+                  align="center"
                 >
-                  <option style={{ background: "#181B23" }} value="Masculino">
-                    Masculino
-                  </option>
-                  <option style={{ background: "#181B23" }} value="Feminino">
-                    Feminino
-                  </option>
-                  <option
-                    style={{ background: "#181B23" }}
-                    value="Prefiro não responder"
-                  >
-                    Prefiro não responder
-                  </option>
-                </Select>
-              </Box>
+                  {data?.user?.name}
+                </Text>
+                {isFetching && (
+                  <Spinner
+                    display={["none", "none", "block"]}
+                    color="gray.500"
+                    ml="4"
+                    size="sm"
+                  />
+                )}
+              </Text>
 
-              <Input
-                {...register("profession")}
-                name="profession"
-                type="text"
-                label="Profissão:"
-                error={errors.profession}
-              />
-            </SimpleGrid>
-          </VStack>
-
-          <Flex mt="8" justify="flex-end">
-            <HStack spacing="4">
               <Button
-                onClick={() => {
-                  router.back();
-                }}
+                onClick={() => refetch()}
                 cursor="pointer"
                 as="a"
-                colorScheme="whiteAlpha"
-              >
-                Cancelar
-              </Button>
-              <Button
-                isLoading={formState.isSubmitting}
-                onClick={handleSubmit(handleEditUser)}
+                size="sm"
+                fontSize="sm"
                 colorScheme="red"
+                leftIcon={<Icon as={RxUpdate} fontSize="16" />}
+                maxW="260px"
+                mt={["4", "4", "0"]}
               >
-                Salvar
+                Atualizar
               </Button>
-            </HStack>
-          </Flex>
-        </Box>
-      </Flex>
-    </Box>
+            </Heading>
+
+            <Divider my="6" borderColor="gray.700" />
+
+            <VStack spacing="8">
+              <SimpleGrid minChildWidth="220px" spacing="8" w="100%">
+                <Input
+                  {...register("name")}
+                  error={errors.name}
+                  name="name"
+                  label="Nome completo:"
+                />
+                <Input
+                  {...register("email")}
+                  error={errors.email}
+                  name="email"
+                  type="email"
+                  label="Novo e-mail:"
+                />
+              </SimpleGrid>
+
+              <SimpleGrid minChildWidth="220px" spacing="8" w="100%">
+                <Box>
+                  <FormLabel htmlFor="sex">Gênero: </FormLabel>
+                  <Select
+                    {...register("sex")}
+                    name="sex"
+                    id="sex"
+                    variant="filled"
+                    bgColor="gray.900"
+                    borderColor="gray.900"
+                    focusBorderColor="red.500"
+                    _hover={{ bgColor: "gray.900" }}
+                    _focus={{ bgColor: "gray.900" }}
+                    size="lg"
+                  >
+                    <option style={{ background: "#181B23" }} value="Masculino">
+                      Masculino
+                    </option>
+                    <option style={{ background: "#181B23" }} value="Feminino">
+                      Feminino
+                    </option>
+                    <option
+                      style={{ background: "#181B23" }}
+                      value="Prefiro não responder"
+                    >
+                      Prefiro não responder
+                    </option>
+                  </Select>
+                </Box>
+
+                <Input
+                  {...register("profession")}
+                  name="profession"
+                  type="text"
+                  label="Profissão:"
+                  error={errors.profession}
+                />
+              </SimpleGrid>
+            </VStack>
+
+            <Flex mt="8" justify="flex-end">
+              <HStack spacing="4">
+                <Button
+                  onClick={() => {
+                    router.back();
+                  }}
+                  cursor="pointer"
+                  as="a"
+                  colorScheme="whiteAlpha"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  isLoading={formState.isSubmitting}
+                  onClick={handleSubmit(handleEditUser)}
+                  colorScheme="red"
+                >
+                  Salvar
+                </Button>
+              </HStack>
+            </Flex>
+          </Box>
+        </Flex>
+      </Box>
+    </>
   );
 }
 

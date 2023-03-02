@@ -7,6 +7,7 @@ import { Header } from "../components/Header";
 import { Sidebar } from "../components/Sidebar";
 import { getSession } from "@auth0/nextjs-auth0";
 import { GetServerSideProps } from "next";
+import { NextSeo } from "next-seo";
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
@@ -67,43 +68,48 @@ const openRateSeries = [{ name: "open-rate", data: [5, 2, 5, 7, 3, 2, 5] }];
 
 export default function Dashboard() {
   return (
-    <Flex flexDir="column" h="100vh">
-      <Header />
+    <>
+      <NextSeo
+        title="jandash | Dashboard"
+      />
+      <Flex flexDir="column" h="100vh">
+        <Header />
 
-      <Flex w="100%" my="6" maxWidth={1480} mx="auto" px="6">
-        <Sidebar />
+        <Flex w="100%" my="6" maxWidth={1480} mx="auto" px="6">
+          <Sidebar />
 
-        <SimpleGrid flex="1" gap="4" minChildWidth={["250px", "320px"]}>
-          <Box p={["4", "6", "8"]} pt="12" bg="gray.800" borderRadius={8}>
-            <Text fontSize="lg" mb="4">
-              Inscritos da semana
-            </Text>
-            <Chart
-              heigth="100%"
-              width="100%"
-              options={options}
-              series={dailySubSeries}
-              type="area"
-              height={160}
-            />
-          </Box>
+          <SimpleGrid flex="1" gap="4" minChildWidth={["250px", "320px"]}>
+            <Box p={["4", "6", "8"]} pt="12" bg="gray.800" borderRadius={8}>
+              <Text fontSize="lg" mb="4">
+                Inscritos da semana
+              </Text>
+              <Chart
+                heigth="100%"
+                width="100%"
+                options={options}
+                series={dailySubSeries}
+                type="area"
+                height={160}
+              />
+            </Box>
 
-          <Box p={["4", "6", "8"]} pt="12" bg="gray.800" borderRadius={8}>
-            <Text fontSize="lg" mb="4">
-              Taxa de abertura
-            </Text>
-            <Chart
-              heigth="100%"
-              width="100%"
-              options={options}
-              series={openRateSeries}
-              type="area"
-              height={160}
-            />
-          </Box>
-        </SimpleGrid>
+            <Box p={["4", "6", "8"]} pt="12" bg="gray.800" borderRadius={8}>
+              <Text fontSize="lg" mb="4">
+                Taxa de abertura
+              </Text>
+              <Chart
+                heigth="100%"
+                width="100%"
+                options={options}
+                series={openRateSeries}
+                type="area"
+                height={160}
+              />
+            </Box>
+          </SimpleGrid>
+        </Flex>
       </Flex>
-    </Flex>
+    </>
   );
 }
 

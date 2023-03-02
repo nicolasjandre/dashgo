@@ -1,5 +1,5 @@
 import { useQuery } from "react-query"
-import { api } from "../services/axios-api";
+import { api } from "../services/axios";
 
 
 type User = {
@@ -20,13 +20,12 @@ type GetUsersResponse = {
 }
 
 export async function getUsers(page: number, registersPerPage: number): Promise<GetUsersResponse> {
-    const { data, headers } = await api.get('/users/get', {
+    const { data, headers } = await api.get('users/get', {
         params: {
             page,
             per_page: registersPerPage
         }
     })
-
 
     const totalCount = Number(headers['x-total-count'])
 

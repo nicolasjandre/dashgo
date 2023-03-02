@@ -22,10 +22,11 @@ import { yupResolver } from "@hookform/resolvers/yup";
 
 import styles from "../../styles/styles.module.scss";
 import { useMutation } from "react-query";
-import { api } from "../../services/axios-api";
+import { api } from "../../services/axios";
 import { queryClient } from "../../services/ReactQueryClient";
 import { getSession } from "@auth0/nextjs-auth0";
 import { GetServerSideProps } from "next";
+import { NextSeo } from "next-seo";
 
 interface CreateUser {
   name: string;
@@ -88,104 +89,110 @@ export default function CreateUser() {
   const { errors } = formState;
 
   return (
-    <Box>
-      <Header />
+    <>
+      <NextSeo title="jandash | Criar Usuário" />
+      <Box>
+        <Header />
 
-      <Flex w="100%" my="6" maxWidth={1480} mx="auto" px="6">
-        <Sidebar />
+        <Flex w="100%" my="6" maxWidth={1480} mx="auto" px="6">
+          <Sidebar />
 
-        <Box
-          className={styles.input}
-          flex="1"
-          borderRadius={8}
-          bg="gray.800"
-          p={["4", "6", "8"]}
-        >
-          <Heading size="lg" fontWeight="normal">
-            Criar usuário
-          </Heading>
+          <Box
+            className={styles.input}
+            flex="1"
+            borderRadius={8}
+            bg="gray.800"
+            p={["4", "6", "8"]}
+          >
+            <Heading size="lg" fontWeight="normal">
+              Criar usuário
+            </Heading>
 
-          <Divider my="6" borderColor="gray.700" />
+            <Divider my="6" borderColor="gray.700" />
 
-          <VStack spacing="8">
-            <SimpleGrid minChildWidth="220px" spacing="8" w="100%">
-              <Input
-                {...register("name")}
-                error={errors.name}
-                name="name"
-                type="text"
-                label="Nome completo:"
-              />
-              <Input
-                {...register("email")}
-                error={errors.email}
-                name="email"
-                type="email"
-                label="E-mail:"
-              />
-            </SimpleGrid>
+            <VStack spacing="8">
+              <SimpleGrid minChildWidth="220px" spacing="8" w="100%">
+                <Input
+                  {...register("name")}
+                  error={errors.name}
+                  name="name"
+                  type="text"
+                  label="Nome completo:"
+                />
+                <Input
+                  {...register("email")}
+                  error={errors.email}
+                  name="email"
+                  type="email"
+                  label="E-mail:"
+                />
+              </SimpleGrid>
 
-            <SimpleGrid minChildWidth="220px" spacing="8" w="100%">
-              <Box>
-                <FormLabel htmlFor="sex">Gênero: </FormLabel>
-                <Select
-                  {...register("sex")}
-                  name="sex"
-                  id="sex"
-                  variant="filled"
-                  bgColor="gray.900"
-                  borderColor="gray.900"
-                  focusBorderColor="red.500"
-                  _hover={{ bgColor: "gray.900" }}
-                  _focus={{ bgColor: "gray.900" }}
-                  size="lg"
+              <SimpleGrid minChildWidth="220px" spacing="8" w="100%">
+                <Box>
+                  <FormLabel htmlFor="sex">Gênero: </FormLabel>
+                  <Select
+                    {...register("sex")}
+                    name="sex"
+                    id="sex"
+                    variant="filled"
+                    bgColor="gray.900"
+                    borderColor="gray.900"
+                    focusBorderColor="red.500"
+                    _hover={{ bgColor: "gray.900" }}
+                    _focus={{ bgColor: "gray.900" }}
+                    size="lg"
+                  >
+                    <option style={{ background: "#181B23" }} value="Masculino">
+                      Masculino
+                    </option>
+                    <option style={{ background: "#181B23" }} value="Feminino">
+                      Feminino
+                    </option>
+                    <option
+                      style={{ background: "#181B23" }}
+                      value="Prefiro não responder"
+                    >
+                      Prefiro não responder
+                    </option>
+                  </Select>
+                </Box>
+
+                <Input
+                  {...register("profession")}
+                  name="profession"
+                  type="text"
+                  label="Profissão:"
+                  error={errors.profession}
+                />
+              </SimpleGrid>
+            </VStack>
+
+            <Flex mt="8" justify="flex-end">
+              <HStack spacing="4">
+                <Button
+                  onClick={() => {
+                    router.push("/users");
+                  }}
+                  cursor="pointer"
+                  as="a"
+                  colorScheme="whiteAlpha"
                 >
-                  <option style={{ background: "#181B23" }} value="Masculino">
-                    Masculino
-                  </option>
-                  <option style={{ background: "#181B23" }} value="Feminino">
-                    Feminino
-                  </option>
-                  <option style={{ background: "#181B23" }} value="Prefiro não responder">
-                    Prefiro não responder
-                  </option>
-                </Select>
-              </Box>
-
-              <Input
-                {...register("profession")}
-                name="profession"
-                type="text"
-                label="Profissão:"
-                error={errors.profession}
-              />
-            </SimpleGrid>
-          </VStack>
-
-          <Flex mt="8" justify="flex-end">
-            <HStack spacing="4">
-              <Button
-                onClick={() => {
-                  router.push("/users");
-                }}
-                cursor="pointer"
-                as="a"
-                colorScheme="whiteAlpha"
-              >
-                Cancelar
-              </Button>
-              <Button
-                isLoading={formState.isSubmitting}
-                onClick={handleSubmit(handleCreateUser)}
-                colorScheme="red"
-              >
-                Salvar
-              </Button>
-            </HStack>
-          </Flex>
-        </Box>
-      </Flex>
-    </Box>
+                  Cancelar
+                </Button>
+                <Button
+                  isLoading={formState.isSubmitting}
+                  onClick={handleSubmit(handleCreateUser)}
+                  colorScheme="red"
+                >
+                  Salvar
+                </Button>
+              </HStack>
+            </Flex>
+          </Box>
+        </Flex>
+      </Box>
+    </>
   );
 }
 

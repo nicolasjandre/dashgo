@@ -1,6 +1,5 @@
 import { useQuery } from "react-query"
-import { api } from "../services/axios-api";
-import { queryClient } from "../services/ReactQueryClient";
+import { api } from "../services/axios";
 
 
 type User = {
