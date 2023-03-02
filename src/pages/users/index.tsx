@@ -28,12 +28,16 @@ import { Sidebar } from "../../components/Sidebar";
 import { useUsers } from "../../hooks/useUsers";
 import { getSession } from "@auth0/nextjs-auth0";
 import { GetServerSideProps } from "next";
-import { useUserPrefetch } from "../../hooks/useUser";
+import { queryClient } from "../../services/ReactQueryClient";
+import { getUser } from "../../hooks/useUser";
 
 export default function UserList() {
   const [page, setPage] = useState(1);
-  const registersPerPage: number = 10
-  const { data, isLoading, isFetching, error, refetch } = useUsers(page, registersPerPage);
+  const registersPerPage: number = 10;
+  const { data, isLoading, isFetching, error, refetch } = useUsers(
+    page,
+    registersPerPage
+  );
 
   const router = useRouter();
 
@@ -51,8 +55,10 @@ export default function UserList() {
     window.scrollTo({ top: 0 });
   }
 
-  function handlePrefetch(userId: string) {
-    useUserPrefetch(userId)
+  function prefetchUserWithId(userId: string) {
+    queryClient.prefetchQuery(["users", userId], () => getUser(userId), {
+      staleTime: 1000 * 60 * 10, // 10 min
+    });
   }
 
   return (
@@ -135,7 +141,7 @@ export default function UserList() {
                           <NextLink href={`/users/${user.id}`}>
                             <Text
                               onMouseEnter={() =>
-                                handlePrefetch(String(user.id))
+                                prefetchUserWithId(String(user.id))
                               }
                               fontWeight="bold"
                               fontSize={["sm", "md", "lg"]}
@@ -164,9 +170,7 @@ export default function UserList() {
                           colorScheme="red"
                           leftIcon={<Icon as={RiPencilLine} fontSize="18" />}
                           iconSpacing={["0", "0", "0", "2"]}
-                          onClick={() =>
-                            router.push(`/users/edit/${user.id}`)
-                          }
+                          onClick={() => router.push(`/users/edit/${user.id}`)}
                         >
                           {isWideVersion ? "Editar" : ""}
                         </Button>

@@ -54,10 +54,3 @@ export function useUser(userId: string) {
             staleTime: 1000 * 60 * 10, // 10 min
         })
 }
-
-export function useUserPrefetch(userId: string) {
-    queryClient.prefetchQuery(['users', userId], () => getUser(userId),
-        {
-            staleTime: 1000 * 60 * 10, // 10 min
-        })
-}
