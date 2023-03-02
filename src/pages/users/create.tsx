@@ -27,6 +27,7 @@ import { queryClient } from "../../services/ReactQueryClient";
 import { getSession } from "@auth0/nextjs-auth0";
 import { GetServerSideProps } from "next";
 import { NextSeo } from "next-seo";
+import { capitalize } from "../../utils/capitalize";
 
 interface CreateUser {
   name: string;
@@ -54,10 +55,10 @@ export default function CreateUser() {
   const createUser = useMutation(
     async (user: CreateUser) => {
       const response = await api.post("users/create", {
-        name: user.name.toLowerCase(),
-        email: user.email,
-        sex: user.sex,
-        profession: user.profession,
+        name: capitalize(user?.name),
+        email: user?.email.toLowerCase(),
+        sex: user?.sex,
+        profession: capitalize(user?.profession),
       });
 
       return response.data;

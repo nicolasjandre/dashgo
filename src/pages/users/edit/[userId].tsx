@@ -32,6 +32,7 @@ import { RxUpdate } from "react-icons/rx";
 import { getSession } from "@auth0/nextjs-auth0";
 import { GetServerSideProps } from "next";
 import { NextSeo } from "next-seo";
+import { capitalize } from "../../../utils/capitalize";
 
 interface EditUser {
   name: string;
@@ -68,10 +69,10 @@ export default function EditUser() {
       try {
         const response = await api.patch(`users/update`, {
           user: {
-            name: user?.name,
-            email: user?.email,
+            name: capitalize(user?.name),
+            email: user?.email.toLowerCase(),
             sex: user?.sex,
-            profession: user?.profession,
+            profession: capitalize(user?.profession),
             id: userId,
           },
         });
