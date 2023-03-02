@@ -25,14 +25,15 @@ import NextLink from "next/link";
 import { Header } from "../../components/Header";
 import { Pagination } from "../../components/Pagination";
 import { Sidebar } from "../../components/Sidebar";
-import { useUsers } from "../../services/hooks/useUsers";
+import { useUsers } from "../../hooks/useUsers";
 import { getSession } from "@auth0/nextjs-auth0";
 import { GetServerSideProps } from "next";
-import { useUserPrefetch } from "../../services/hooks/useUser";
+import { useUserPrefetch } from "../../hooks/useUser";
 
 export default function UserList() {
   const [page, setPage] = useState(1);
-  const { data, isLoading, isFetching, error, refetch } = useUsers(page);
+  const registersPerPage: number = 10
+  const { data, isLoading, isFetching, error, refetch } = useUsers(page, registersPerPage);
 
   const router = useRouter();
 
@@ -172,6 +173,7 @@ export default function UserList() {
               </Table>
 
               <Pagination
+                registersPerPage={registersPerPage}
                 totalCountOfRegisters={data?.totalCount!}
                 currentPage={page}
                 onPageChange={onPageChange}

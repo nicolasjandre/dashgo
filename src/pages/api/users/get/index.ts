@@ -29,7 +29,7 @@ module.exports = async (req: NextApiRequest, res: NextApiResponse) => {
                     q.Lambda((x: any) => q.Get(x))
                 ))
 
-            const { page = 1, per_page = 10 } = req.query;
+            const { page = 1, per_page = 5 } = req.query;
 
             const total = users.data.length
             const pageStart = (Number(page) - 1) * Number(per_page)

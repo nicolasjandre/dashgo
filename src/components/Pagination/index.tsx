@@ -46,11 +46,11 @@ export function Pagination({
       spacing="6"
     >
       <Box>
-        {currentPage === 1 ? (
+        {currentPage === 1 && totalCountOfRegisters > 9 ? (
           <strong>{`1 - 10 de ${totalCountOfRegisters}`}</strong>
         ) : currentPage === lastPage ? (
           <strong>{`${
-            currentPage * registersPerPage > totalCountOfRegisters
+            currentPage * registersPerPage >= totalCountOfRegisters
               ? currentPage * registersPerPage -
                 registersPerPage +
                 1 +

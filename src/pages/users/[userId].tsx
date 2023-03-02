@@ -20,9 +20,13 @@ import styles from "../styles.module.scss";
 
 import { RxUpdate } from "react-icons/rx";
 import { RiPencilLine } from "react-icons/ri";
+import { BsTrash } from "react-icons/bs";
 import { getSession } from "@auth0/nextjs-auth0";
 import { GetServerSideProps } from "next";
-import { useUser } from "../../services/hooks/useUser";
+import { useUser } from "../../hooks/useUser";
+import { useMutation } from "react-query";
+import { api } from "../../services/axios-api";
+import { queryClient } from "../../services/ReactQueryClient";
 
 export default function EditUser() {
   const router = useRouter();
@@ -30,7 +34,40 @@ export default function EditUser() {
 
   const { data, isFetching, refetch } = useUser(userId);
 
-  console.log(data)
+  const deleteUser = useMutation(
+    async (userId: string) => {
+      try {
+        await api.delete("users/delete", {
+          data: { userId },
+        });
+      } catch (e) {
+        console.log(e);
+      }
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries("users");
+      },
+    }
+  );
+
+  const handleDeleteUser = async (userId: string) => {
+    if (!confirm("Deseja apagar este usuário?")) {
+      return
+    }
+
+    try {
+      await deleteUser.mutateAsync(userId);
+    } catch (error: any) {
+      if (error?.response?.status === 409) {
+        return alert(error?.response?.data);
+      }
+      return console.error(error?.response?.data);
+    }
+    
+    alert("Usuário apagado com sucesso!");
+    router.push("/users");
+  };
 
   return (
     <Box>
@@ -48,31 +85,45 @@ export default function EditUser() {
         >
           <Heading
             display="flex"
-            justifyContent="space-between"
+            justifyContent={["center", "center", "space-between"]}
+            alignItems={["center", "center", "space-between"]}
             size="lg"
             fontWeight="normal"
+            flexDir={["column", "column", "row"]}
           >
             <Flex alignItems="center" gap="3">
               <Avatar size={["sm", "md"]} name={data?.user?.name} />
               <Text fontSize={["16", "20", "26"]} as="span" color="red.500">
                 {data?.user?.name}
-                {isFetching && (
-                  <Spinner color="gray.500" ml="4" size="sm" />
-                )}
+                {isFetching && <Spinner color="gray.500" ml="4" size="sm" />}
               </Text>
             </Flex>
 
-            <Button
-              onClick={() => refetch()}
-              cursor="pointer"
-              as="a"
-              size="sm"
-              fontSize="sm"
-              colorScheme="red"
-              leftIcon={<Icon as={RxUpdate} fontSize="16" />}
-            >
-              Atualizar
-            </Button>
+            <HStack mt={["4", "4", "0"]}>
+              <Button
+                onClick={() => refetch()}
+                cursor="pointer"
+                as="a"
+                size="sm"
+                fontSize="sm"
+                colorScheme="red"
+                leftIcon={<Icon as={RxUpdate} fontSize="16" />}
+              >
+                Atualizar
+              </Button>
+
+              <Button
+                onClick={() => handleDeleteUser(userId)}
+                cursor="pointer"
+                as="a"
+                size="sm"
+                fontSize="sm"
+                colorScheme="red"
+                leftIcon={<Icon as={BsTrash} fontSize="16" />}
+              >
+                Apagar
+              </Button>
+            </HStack>
           </Heading>
 
           <Divider my="6" borderColor="gray.700" />

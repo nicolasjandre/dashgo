@@ -1,5 +1,6 @@
 import { useQuery } from "react-query"
-import { api } from "../axios-api"
+import { api } from "../services/axios-api";
+
 
 type User = {
     data: User;
@@ -18,10 +19,11 @@ type GetUsersResponse = {
     users: User[];
 }
 
-export async function getUsers(page: number): Promise<GetUsersResponse> {
+export async function getUsers(page: number, registersPerPage: number): Promise<GetUsersResponse> {
     const { data, headers } = await api.get('/users/get', {
         params: {
-            page
+            page,
+            per_page: registersPerPage
         }
     })
 
@@ -53,8 +55,8 @@ export async function getUsers(page: number): Promise<GetUsersResponse> {
     }
 }
 
-export function useUsers(page: number) {
-    return useQuery(['users', page], () => getUsers(page),
+export function useUsers(page: number, registersPerPage: number) {
+    return useQuery(['users', page], () => getUsers(page, registersPerPage),
         {
             staleTime: 1000 * 60 * 10, // 10 min
         })

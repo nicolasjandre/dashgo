@@ -11,7 +11,7 @@ import {
   Spinner,
   Icon,
   FormLabel,
-  Select
+  Select,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { Input } from "../../../components/Form/Input";
@@ -23,11 +23,11 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 
-import styles from "../styles.module.scss";
+import styles from "../../../styles/styles.module.scss";
 import { useMutation } from "react-query";
 import { api } from "../../../services/axios-api";
 import { queryClient } from "../../../services/ReactQueryClient";
-import { useUser } from "../../../services/hooks/useUser";
+import { useUser } from "../../../hooks/useUser";
 import { RxUpdate } from "react-icons/rx";
 import { getSession } from "@auth0/nextjs-auth0";
 import { GetServerSideProps } from "next";
@@ -64,17 +64,21 @@ export default function EditUser() {
 
   const editUser = useMutation(
     async (user: EditUser) => {
-      const response = await api.patch(`users/update`, {
-        user: {
-          name: user?.name,
-          email: user?.email,
-          sex: user?.sex,
-          profession: user?.profession,
-          id: userId,
-        },
-      });
+      try {
+        const response = await api.patch(`users/update`, {
+          user: {
+            name: user?.name,
+            email: user?.email,
+            sex: user?.sex,
+            profession: user?.profession,
+            id: userId,
+          },
+        });
 
-      return response.data.user;
+        return response.data.user;
+      } catch (e) {
+        console.log(e);
+      }
     },
     {
       onSuccess: () => {
@@ -208,6 +212,7 @@ export default function EditUser() {
               <Box>
                 <FormLabel htmlFor="sex">Gênero: </FormLabel>
                 <Select
+                  {...register("sex")}
                   name="sex"
                   id="sex"
                   variant="filled"
@@ -218,13 +223,16 @@ export default function EditUser() {
                   _focus={{ bgColor: "gray.900" }}
                   size="lg"
                 >
-                  <option style={{ background: "#181B23" }} value="M">
+                  <option style={{ background: "#181B23" }} value="Masculino">
                     Masculino
                   </option>
-                  <option style={{ background: "#181B23" }} value="F">
+                  <option style={{ background: "#181B23" }} value="Feminino">
                     Feminino
                   </option>
-                  <option style={{ background: "#181B23" }} value="P">
+                  <option
+                    style={{ background: "#181B23" }}
+                    value="Prefiro não responder"
+                  >
                     Prefiro não responder
                   </option>
                 </Select>

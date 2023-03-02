@@ -20,7 +20,7 @@ import { SubmitHandler, useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 
-import styles from "./styles.module.scss";
+import styles from "../../styles/styles.module.scss";
 import { useMutation } from "react-query";
 import { api } from "../../services/axios-api";
 import { queryClient } from "../../services/ReactQueryClient";
@@ -53,12 +53,10 @@ export default function CreateUser() {
   const createUser = useMutation(
     async (user: CreateUser) => {
       const response = await api.post("users/create", {
-        name: user.name,
+        name: user.name.toLowerCase(),
         email: user.email,
         sex: user.sex,
         profession: user.profession,
-        created_at: new Date(),
-        updated_at: new Date(),
       });
 
       return response.data;
@@ -79,7 +77,7 @@ export default function CreateUser() {
       }
       return console.error(error?.response?.data);
     }
-    alert('Usuário cadastrado com sucesso!')
+    alert("Usuário cadastrado com sucesso!");
     router.push("/users");
   };
 
@@ -128,9 +126,10 @@ export default function CreateUser() {
             </SimpleGrid>
 
             <SimpleGrid minChildWidth="220px" spacing="8" w="100%">
-            <Box>
+              <Box>
                 <FormLabel htmlFor="sex">Gênero: </FormLabel>
                 <Select
+                  {...register("sex")}
                   name="sex"
                   id="sex"
                   variant="filled"
@@ -141,18 +140,18 @@ export default function CreateUser() {
                   _focus={{ bgColor: "gray.900" }}
                   size="lg"
                 >
-                  <option style={{ background: "#181B23" }} value="M">
+                  <option style={{ background: "#181B23" }} value="Masculino">
                     Masculino
                   </option>
-                  <option style={{ background: "#181B23" }} value="F">
+                  <option style={{ background: "#181B23" }} value="Feminino">
                     Feminino
                   </option>
-                  <option style={{ background: "#181B23" }} value="P">
+                  <option style={{ background: "#181B23" }} value="Prefiro não responder">
                     Prefiro não responder
                   </option>
                 </Select>
               </Box>
-              
+
               <Input
                 {...register("profession")}
                 name="profession"
