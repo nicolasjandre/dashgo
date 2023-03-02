@@ -16,8 +16,6 @@ import { useRouter } from "next/router";
 import { Header } from "../../components/Header";
 import { Sidebar } from "../../components/Sidebar";
 
-import styles from "../styles.module.scss";
-
 import { RxUpdate } from "react-icons/rx";
 import { RiPencilLine } from "react-icons/ri";
 import { BsTrash } from "react-icons/bs";
@@ -77,7 +75,6 @@ export default function EditUser() {
         <Sidebar />
 
         <Box
-          className={styles.input}
           flex="1"
           borderRadius={8}
           bg="gray.800"
