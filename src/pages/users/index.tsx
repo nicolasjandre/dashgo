@@ -51,6 +51,10 @@ export default function UserList() {
     window.scrollTo({ top: 0 });
   }
 
+  function handlePrefetch(userId: string) {
+    useUserPrefetch(userId)
+  }
+
   return (
     <Box>
       <Header />
@@ -131,7 +135,7 @@ export default function UserList() {
                           <NextLink href={`/users/${user.id}`}>
                             <Text
                               onMouseEnter={() =>
-                                useUserPrefetch(String(user.id))
+                                handlePrefetch(String(user.id))
                               }
                               fontWeight="bold"
                               fontSize={["sm", "md", "lg"]}
