@@ -23,7 +23,6 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import styles from "../../styles/styles.module.scss";
 import { useMutation } from "react-query";
 import { api } from "../../services/axios";
-import { queryClient } from "../../services/ReactQueryClient";
 import { getSession } from "@auth0/nextjs-auth0";
 import { GetServerSideProps } from "next";
 import { NextSeo } from "next-seo";
