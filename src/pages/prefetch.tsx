@@ -9,11 +9,12 @@ import { getRealUser } from "../hooks/useRealUser";
 import { api } from "../services/axios";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
-import { dehydrate, useQueryClient } from "react-query";
+import { dehydrate, QueryClient } from "react-query";
 
 export default function Prefetch() {
+  const route = useRouter();
+
   useEffect(() => {
-    const route = useRouter();
     setTimeout(() => route.push("/dashboard"), 1000)
   }, [])
 
@@ -70,7 +71,9 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   if (!user) {
     createRealUser();
   }
-  const queryClient = useQueryClient()
+
+  const queryClient = new QueryClient()
+
   await queryClient.prefetchQuery(["real_user"], () =>
     getRealUser(session?.user?.email)
   );
