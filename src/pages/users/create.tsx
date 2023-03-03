@@ -21,7 +21,7 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 
 import styles from "../../styles/styles.module.scss";
-import { useMutation } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 import { api } from "../../services/axios";
 import { getSession } from "@auth0/nextjs-auth0";
 import { GetServerSideProps } from "next";
@@ -49,6 +49,7 @@ const createUserFormSchema = yup.object().shape({
 });
 
 export default function CreateUser() {
+  const queryClient = useQueryClient()
   const router = useRouter();
 
   const createUser = useMutation(
