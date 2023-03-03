@@ -10,17 +10,17 @@ const client = new faunadb.Client({
 });
 
 module.exports = async (req: NextApiRequest, res: NextApiResponse) => {
-  const { id, name, email, sex, profession } = req.body.user;
+  const { id, name, sex, profession } = req.body.user;
 
   if (req.method === "PATCH") {
     try {
       await client.query(
-        q.Update(q.Ref(q.Collection("users"), String(id)), {
+        q.Update(q.Ref(q.Collection("real_users"), String(id)), {
           data: {
             name,
-            email,
             sex,
             profession,
+            needUpdateProfile: false,
             updated_at: Date.now(),
           },
         })

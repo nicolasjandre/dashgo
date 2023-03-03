@@ -18,59 +18,23 @@ import { Sidebar } from "../../components/Sidebar";
 
 import { RxUpdate } from "react-icons/rx";
 import { RiPencilLine } from "react-icons/ri";
-import { BsTrash } from "react-icons/bs";
 import { getSession } from "@auth0/nextjs-auth0";
 import { GetServerSideProps } from "next";
-import { useUser } from "../../hooks/useUser";
-import { useMutation, useQueryClient } from "react-query";
-import { api } from "../../services/axios";
+import { useUser } from "@auth0/nextjs-auth0/client";
 import { NextSeo } from "next-seo";
+import { useRealUser } from "../../hooks/useRealUser";
 
 export default function EditUser() {
   const router = useRouter();
-  const userId = String(router.query.userId);
-  const queryClient = useQueryClient()
+  const auth0User = useUser();
 
-  const { data, isFetching, refetch } = useUser(userId);
-
-  const deleteUser = useMutation(
-    async (userId: string) => {
-      try {
-        await api.delete("users/delete", {
-          data: { userId },
-        });
-      } catch (e) {
-        console.log(e);
-      }
-    },
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries("users");
-      },
-    }
+  const { data, isFetching, refetch } = useRealUser(
+    auth0User?.user?.email as string
   );
-
-  const handleDeleteUser = async (userId: string) => {
-    if (!confirm("Deseja apagar este usuário?")) {
-      return;
-    }
-
-    try {
-      await deleteUser.mutateAsync(userId);
-    } catch (error: any) {
-      if (error?.response?.status === 409) {
-        return alert(error?.response?.data);
-      }
-      return console.error(error?.response?.data);
-    }
-
-    alert("Usuário apagado com sucesso!");
-    router.push("/users");
-  };
 
   return (
     <>
-      <NextSeo title={`Perfil | ${data?.user?.name}`} />
+      <NextSeo title={"Jandash | Meu perfil"} />
       <Box>
         <Header />
 
@@ -94,31 +58,17 @@ export default function EditUser() {
                 </Text>
               </Flex>
 
-              <HStack mt={["4", "4", "0"]}>
-                <Button
-                  onClick={() => refetch()}
-                  cursor="pointer"
-                  as="a"
-                  size="sm"
-                  fontSize="sm"
-                  colorScheme="red"
-                  leftIcon={<Icon as={RxUpdate} fontSize="16" />}
-                >
-                  Atualizar
-                </Button>
-
-                <Button
-                  onClick={() => handleDeleteUser(userId)}
-                  cursor="pointer"
-                  as="a"
-                  size="sm"
-                  fontSize="sm"
-                  colorScheme="red"
-                  leftIcon={<Icon as={BsTrash} fontSize="16" />}
-                >
-                  Apagar
-                </Button>
-              </HStack>
+              <Button
+                onClick={() => refetch()}
+                cursor="pointer"
+                as="a"
+                size="sm"
+                fontSize="sm"
+                colorScheme="red"
+                leftIcon={<Icon as={RxUpdate} fontSize="16" />}
+              >
+                Atualizar
+              </Button>
             </Heading>
 
             <Divider my="6" borderColor="gray.700" />
@@ -171,7 +121,7 @@ export default function EditUser() {
                 <Button
                   size={["sm", "md"]}
                   colorScheme="red"
-                  onClick={() => router.push(`/users/edit/${userId}`)}
+                  onClick={() => router.push("/profile/edit/")}
                   leftIcon={<Icon as={RiPencilLine} fontSize="18" />}
                 >
                   Editar

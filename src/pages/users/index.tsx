@@ -28,11 +28,12 @@ import { Sidebar } from "../../components/Sidebar";
 import { useUsers } from "../../hooks/useUsers";
 import { getSession } from "@auth0/nextjs-auth0";
 import { GetServerSideProps } from "next";
-import { queryClient } from "../../services/ReactQueryClient";
 import { getUser } from "../../hooks/useUser";
 import { NextSeo } from "next-seo";
+import { useQueryClient } from "react-query";
 
 export default function UserList() {
+  const queryClient = useQueryClient()
   const [page, setPage] = useState(1);
   const registersPerPage: number = 10;
   const { data, isLoading, isFetching, error, refetch } = useUsers(

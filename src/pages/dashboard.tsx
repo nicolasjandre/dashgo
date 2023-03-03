@@ -69,9 +69,7 @@ const openRateSeries = [{ name: "open-rate", data: [5, 2, 5, 7, 3, 2, 5] }];
 export default function Dashboard() {
   return (
     <>
-      <NextSeo
-        title="jandash | Dashboard"
-      />
+      <NextSeo title="jandash | Dashboard" />
       <Flex flexDir="column" h="100vh">
         <Header />
 
@@ -125,8 +123,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       },
     };
   }
-
   return {
     props: {},
-  };
+  }
 };

@@ -39,7 +39,7 @@ export default function SignIn() {
           flexDir="column"
         >
           <Button
-            onClick={() => route.push("/api/auth/login?returnTo=/dashboard")}
+            onClick={() => route.push("/api/auth/login?returnTo=/prefetch")}
             type="submit"
             colorScheme="red"
             size="lg"
@@ -60,7 +60,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   if (session) {
     return {
       redirect: {
-        destination: "/dashboard",
+        destination: "/prefetch",
         permanent: false,
       },
     };

@@ -8,57 +8,47 @@ import {
   VStack,
   Button,
   Text,
-  Spinner,
-  Icon,
   FormLabel,
   Select,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
-import { Input } from "../../../components/Form/Input";
+import { Input } from "../../components/Form/Input";
 
-import { Header } from "../../../components/Header";
-import { Sidebar } from "../../../components/Sidebar";
+import { Header } from "../../components/Header";
+import { Sidebar } from "../../components/Sidebar";
 
 import { SubmitHandler, useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 
-import styles from "../../../styles/styles.module.scss";
+import styles from "../../styles/styles.module.scss";
 import { useMutation, useQueryClient } from "react-query";
-import { api } from "../../../services/axios";
-import { useUser } from "../../../hooks/useUser";
-import { RxUpdate } from "react-icons/rx";
+import { api } from "../../services/axios";
 import { getSession } from "@auth0/nextjs-auth0";
 import { GetServerSideProps } from "next";
 import { NextSeo } from "next-seo";
-import { capitalize } from "../../../utils/capitalize";
+import { capitalize } from "../../utils/capitalize";
+import { useUser } from "@auth0/nextjs-auth0/client";
+import { useRealUser } from "../../hooks/useRealUser";
 
 interface EditUser {
   name: string;
-  email: string;
+  id: string;
   sex: string;
   profession: string;
 }
 
-const emailRegex =
-  /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-
 const editUserFormSchema = yup.object().shape({
   name: yup.string().required("Nome é obrigatório."),
-
-  email: yup
-    .string()
-    .required("E-mail é obrigatório.")
-    .email("Digite um e-mail válido.")
-    .matches(emailRegex, "Digite um e-mail válido."),
 });
 
 export default function EditUser() {
-  const router = useRouter();
   const queryClient = useQueryClient()
-  const userId = String(router.query.userId);
+  const router = useRouter();
 
-  const { data, isFetching, refetch } = useUser(userId);
+  const auth0User = useUser();
+
+  const { data } = useRealUser(auth0User?.user?.email as string);
 
   const { register, handleSubmit, formState } = useForm<EditUser>({
     resolver: yupResolver(editUserFormSchema),
@@ -67,28 +57,26 @@ export default function EditUser() {
   const editUser = useMutation(
     async (user: EditUser) => {
       try {
-        const response = await api.patch(`users/update`, {
+        const response = await api.patch(`realusers/update`, {
           user: {
             name: capitalize(user?.name),
-            email: user?.email.toLowerCase(),
             sex: user?.sex,
             profession: capitalize(user?.profession),
-            id: userId,
+            id: data?.user?.id,
           },
         });
 
-        return response
+        console.log(response);
       } catch (e) {
         console.log(e);
       }
     },
     {
       onSuccess: () => {
-        queryClient.invalidateQueries("users");
+        queryClient.invalidateQueries(["real_user"]);
       },
     }
   );
-  const { errors } = formState;
 
   const handleEditUser: SubmitHandler<EditUser> = async (data) => {
     try {
@@ -100,12 +88,12 @@ export default function EditUser() {
       return console.error(error?.response?.data);
     }
     alert("Usuário editado com sucesso!");
-    router.push("/users");
+    router.push("/profile");
   };
 
   return (
     <>
-      <NextSeo title={`Editar | ${data?.user?.name}`} />
+      <NextSeo title={`Editar | Meu Perfil`} />
       <Box>
         <Header />
 
@@ -127,70 +115,9 @@ export default function EditUser() {
               size="lg"
               fontWeight="normal"
             >
-              <Text
-                display={["inline", "inline", "none"]}
-                as="span"
-                color="white"
-                align="center"
-              >
-                Editando usuário:{" "}
+              <Text as="span" color="red.500" align="center">
+                Edite seu perfil
               </Text>
-              <Text
-                display={["inline", "inline", "none"]}
-                as="span"
-                color="red.500"
-                align="center"
-              >
-                {data?.user?.name}
-
-                {isFetching && (
-                  <Spinner
-                    display={["block", "block", "none"]}
-                    color="gray.500"
-                    ml="4"
-                    size="sm"
-                  />
-                )}
-              </Text>
-
-              <Text
-                display={["none", "none", "inline"]}
-                as="span"
-                color="white"
-                align="center"
-              >
-                Editando usuário:{" "}
-                <Text
-                  display={["none", "none", "inline"]}
-                  as="span"
-                  color="red.500"
-                  align="center"
-                >
-                  {data?.user?.name}
-                </Text>
-                {isFetching && (
-                  <Spinner
-                    display={["none", "none", "block"]}
-                    color="gray.500"
-                    ml="4"
-                    size="sm"
-                  />
-                )}
-              </Text>
-
-              <Button
-                onClick={() => refetch()}
-                cursor="pointer"
-                as="a"
-                size="sm"
-                fontSize="sm"
-                colorScheme="red"
-                leftIcon={<Icon as={RxUpdate} fontSize="16" />}
-                maxW="260px"
-                mt={["4", "4", "0"]}
-              >
-                Atualizar
-              </Button>
             </Heading>
 
             <Divider my="6" borderColor="gray.700" />
@@ -199,16 +126,16 @@ export default function EditUser() {
               <SimpleGrid minChildWidth="220px" spacing="8" w="100%">
                 <Input
                   {...register("name")}
-                  error={errors.name}
+                  error={formState?.errors.name}
                   name="name"
                   label="Nome completo:"
                 />
                 <Input
-                  {...register("email")}
-                  error={errors.email}
                   name="email"
                   type="email"
-                  label="Novo e-mail:"
+                  label="E-mail:"
+                  value={data?.user.email}
+                  isDisabled
                 />
               </SimpleGrid>
 
@@ -247,7 +174,7 @@ export default function EditUser() {
                   name="profession"
                   type="text"
                   label="Profissão:"
-                  error={errors.profession}
+                  error={formState?.errors.profession}
                 />
               </SimpleGrid>
             </VStack>
