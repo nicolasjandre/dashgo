@@ -12,9 +12,8 @@ import { useEffect } from "react";
 import { dehydrate, useQueryClient } from "react-query";
 
 export default function Prefetch() {
-  const route = useRouter();
-
   useEffect(() => {
+    const route = useRouter();
     setTimeout(() => route.push("/dashboard"), 1000)
   }, [])
 
