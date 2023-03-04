@@ -138,7 +138,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     };
   }
 
-  if (!lastUrl?.includes("localhost:3000")) {
+  if (!lastUrl?.includes("jandash.vercel.app")) {
     return {
       redirect: {
         destination: "/prefetch",

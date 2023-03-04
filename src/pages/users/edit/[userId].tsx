@@ -22,7 +22,7 @@ import { Sidebar } from "../../../components/Sidebar";
 import { SubmitHandler, useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import professions from "../../../utils/professions.json"
+import professions from "../../../utils/professions.json";
 
 import styles from "../../../styles/styles.module.scss";
 import { useMutation, useQueryClient } from "react-query";
@@ -56,7 +56,7 @@ const editUserFormSchema = yup.object().shape({
 
 export default function EditUser() {
   const router = useRouter();
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
   const userId = String(router.query.userId);
 
   const { data, isFetching, refetch } = useUser(userId);
@@ -78,7 +78,7 @@ export default function EditUser() {
           },
         });
 
-        return response
+        return response;
       } catch (e) {
         console.log(e);
       }
@@ -260,7 +260,13 @@ export default function EditUser() {
                     size="lg"
                   >
                     {professions.profissoes.map((profession: string) => (
-                      <option key={profession} value={profession} style={{ background: "#181B23" }}>{profession}</option>
+                      <option
+                        key={profession}
+                        value={profession}
+                        style={{ background: "#181B23" }}
+                      >
+                        {profession}
+                      </option>
                     ))}
                   </Select>
                 </Box>
@@ -299,10 +305,21 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const response = await getSession(ctx.req, ctx.res);
   const session = JSON.parse(JSON.stringify(response));
 
+  const lastUrl = ctx.req.headers.referer;
+
   if (!session) {
     return {
       redirect: {
         destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  if (!lastUrl?.includes("jandash.vercel.app")) {
+    return {
+      redirect: {
+        destination: "/prefetch",
         permanent: false,
       },
     };

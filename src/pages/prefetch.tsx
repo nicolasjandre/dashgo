@@ -16,7 +16,7 @@ export default function Prefetch() {
 
   useEffect(() => {
     setTimeout(() => route.push("/dashboard"), 1000);
-  }, []);
+  });
 
   return (
     <>
