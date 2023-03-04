@@ -164,19 +164,21 @@ export default function UserList() {
                 Erro!
               </ModalHeader>
             ) : (
-              deleteUser.isLoading && (
+              isConfirmingDeleteUsers && (
                 <ModalHeader textAlign="center">
-                  {isConfirmingDeleteUsers &&
-                    (isCheck.length < 2
-                      ? "Tem certeza que quer deletar o usuário?"
-                      : `Tem certeza que quer deletar ${isCheck.length} usuários?`)}
-                  {!isConfirmingDeleteUsers &&
-                    (isCheck.length < 2
-                      ? "Deletando usuário..."
-                      : "Deletando usuários...")}
+                  {isCheck.length < 2
+                    ? "Tem certeza que quer deletar o usuário?"
+                    : `Tem certeza que quer deletar ${isCheck.length} usuários?`}
                 </ModalHeader>
               )
             )}
+            {!isConfirmingDeleteUsers &&
+              deleteUser?.isLoading &&
+              (isCheck.length < 2 ? (
+                <ModalHeader>Deletando usuário...</ModalHeader>
+              ) : (
+                <ModalHeader>Deletando usuários...</ModalHeader>
+              ))}
             {!isErrorOnDelete &&
               !isConfirmingDeleteUsers &&
               !deleteUser?.isLoading && (
@@ -191,11 +193,6 @@ export default function UserList() {
             ) : (
               <ModalBody textAlign="center">
                 {isConfirmingDeleteUsers && ""}
-                {!isConfirmingDeleteUsers &&
-                  deleteUser?.isLoading &&
-                  (isCheck.length < 2
-                    ? "Deletando usuário..."
-                    : "Deletando usuários...")}
                 {!isConfirmingDeleteUsers &&
                   !deleteUser?.isLoading &&
                   (isCheck.length < 2
