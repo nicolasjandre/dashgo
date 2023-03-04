@@ -28,7 +28,7 @@ module.exports = async (req: NextApiRequest, res: NextApiResponse) => {
         } catch (e: any) {
             if (e.message === 'instance not found') {
                 try {
-                    const dbs = await client.query(
+                    await client.query(
                         q.Create(q.Collection("real_users"), {
                             data: {
                                 name,
@@ -44,7 +44,7 @@ module.exports = async (req: NextApiRequest, res: NextApiResponse) => {
                         )
                     )
 
-                    return res.status(200).json(dbs)
+                    return res.status(200).json("Usuário criado com sucesso!")
                 } catch {
                     return res.status(500).json('Não foi possível cadastrar o usuário.')
                 }

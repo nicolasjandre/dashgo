@@ -15,8 +15,8 @@ export default function Prefetch() {
   const route = useRouter();
 
   useEffect(() => {
-    setTimeout(() => route.push("/dashboard"), 1000)
-  }, [])
+    setTimeout(() => route.push("/dashboard"), 1000);
+  }, []);
 
   return (
     <>
@@ -55,31 +55,28 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     };
   }
 
-  const user = getRealUser(session?.user?.email);
-
-  const createRealUser = async () => {
-    const response = await api.post("realusers/create", {
-      name: session?.user?.name,
-      email: session?.user?.email,
-      sex: "Não informado",
-      profession: "Não informado",
-    });
-
-    return response.data;
-  };
+  const user = await getRealUser(session?.user?.email);
 
   if (!user) {
-    createRealUser();
+    try {
+      await api.post("realusers/create", {
+        name: session?.user?.name,
+        email: session?.user?.email,
+        sex: "Não informado",
+        profession: "Não informado",
+      });
+      } catch (err) {
+      console.log(err);
+    }
   }
 
-  const queryClient = new QueryClient()
-
+  const queryClient = new QueryClient();
   await queryClient.prefetchQuery(["real_user"], () =>
     getRealUser(session?.user?.email)
   );
   await queryClient.prefetchQuery(["users", 1], () => getUsers(1, 10));
 
   return {
-    props: { dehydratedState: dehydrate(queryClient)},
+    props: { dehydratedState: dehydrate(queryClient) },
   };
 };
