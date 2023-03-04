@@ -15,7 +15,7 @@ module.exports = async (req: NextApiRequest, res: NextApiResponse) => {
     if (req.method === "DELETE") {
         try {
             await client.query(
-                q.Delete(q.Ref(q.Collection('users'), String(userId) + 'oi'))
+                q.Delete(q.Ref(q.Collection('users'), String(userId)))
             )
 
             return res.status(200).json('Usuário deletado com sucesso.')

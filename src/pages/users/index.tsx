@@ -44,7 +44,7 @@ export default function UserList() {
   const queryClient = useQueryClient();
   const [isCheckAll, setIsCheckAll] = useState(false);
   const [isCheck, setIsCheck] = useState<string[]>([]);
-  const [isErrorOnDelete, setIsErrorOnDelete] = useState(false)
+  const [isErrorOnDelete, setIsErrorOnDelete] = useState(false);
   const [isDeletingUsersModalOpen, setIsDeletingUsersModalOpen] =
     useState<boolean>(false);
   const [isConfirmingDeleteUsers, setIsConfirmingDeleteUsers] = useState(true);
@@ -97,16 +97,16 @@ export default function UserList() {
 
   const deleteUser = useMutation(
     async (userId: string) => {
-        const response = await api.delete("users/delete", {
-          data: { userId },
-        });
-        
-        return response
+      const response = await api.delete("users/delete", {
+        data: { userId },
+      });
+
+      return response;
     },
     {
       onError: (e) => {
-        setIsErrorOnDelete(true)
-        console.log(e)
+        setIsErrorOnDelete(true);
+        console.log(e);
       },
       onSuccess: () => {
         queryClient.invalidateQueries("users");
@@ -119,6 +119,7 @@ export default function UserList() {
   }
 
   function handleCloseDeletingUsersModal() {
+    setIsErrorOnDelete(false);
     setIsCheck([]);
     setIsDeletingUsersModalOpen(false);
   }
@@ -158,29 +159,48 @@ export default function UserList() {
             justifyContent="center"
             bg="gray.600"
           >
-            <ModalHeader textAlign="center">
-              {isConfirmingDeleteUsers &&
-                (isCheck.length < 2
-                  ? "Tem certeza que quer deletar o usuário?"
-                  : `Tem certeza que quer deletar ${isCheck.length} usuários?`)}
-              {!isConfirmingDeleteUsers &&
-                (isCheck.length < 2
-                  ? "Deletando usuário..."
-                  : "Deletando usuários...")}
-            </ModalHeader>
             {isErrorOnDelete ? (
-              <ModalBody>
+              <ModalHeader color="red" textAlign="center">
+                Erro!
+              </ModalHeader>
+            ) : (
+              deleteUser.isLoading && (
+                <ModalHeader textAlign="center">
+                  {isConfirmingDeleteUsers &&
+                    (isCheck.length < 2
+                      ? "Tem certeza que quer deletar o usuário?"
+                      : `Tem certeza que quer deletar ${isCheck.length} usuários?`)}
+                  {!isConfirmingDeleteUsers &&
+                    (isCheck.length < 2
+                      ? "Deletando usuário..."
+                      : "Deletando usuários...")}
+                </ModalHeader>
+              )
+            )}
+            {!isErrorOnDelete &&
+              !isConfirmingDeleteUsers &&
+              !deleteUser?.isLoading && (
+                <ModalHeader color="#00FF00	" textAlign="center">
+                  Sucesso!
+                </ModalHeader>
+              )}
+            {isErrorOnDelete ? (
+              <ModalBody textAlign="center">
                 Ocorreu um erro ao deletar o usuário.
               </ModalBody>
             ) : (
-              <ModalBody>
+              <ModalBody textAlign="center">
                 {isConfirmingDeleteUsers && ""}
                 {!isConfirmingDeleteUsers &&
-                  (isCheck.length < 2 ? (
-                    "O usuário foi deletado."
-                  ) : (
-                    "Os usuários foram deletados."
-                  ))}
+                  deleteUser?.isLoading &&
+                  (isCheck.length < 2
+                    ? "Deletando usuário..."
+                    : "Deletando usuários...")}
+                {!isConfirmingDeleteUsers &&
+                  !deleteUser?.isLoading &&
+                  (isCheck.length < 2
+                    ? "Usuário deletado."
+                    : "Usuários deletados.")}
               </ModalBody>
             )}
 
