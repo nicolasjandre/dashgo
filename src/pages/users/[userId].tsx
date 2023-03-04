@@ -200,7 +200,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     };
   }
 
-  if (!lastUrl?.includes("jandash.vercel.app")) {
+  if (!lastUrl?.includes(String(process.env.SITE_URL))) {
     return {
       redirect: {
         destination: "/prefetch",
