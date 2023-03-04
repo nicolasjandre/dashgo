@@ -44,8 +44,10 @@ export default function UserList() {
   const queryClient = useQueryClient();
   const [isCheckAll, setIsCheckAll] = useState(false);
   const [isCheck, setIsCheck] = useState<string[]>([]);
+  const [isErrorOnDelete, setIsErrorOnDelete] = useState(false)
   const [isDeletingUsersModalOpen, setIsDeletingUsersModalOpen] =
-    useState(false);
+    useState<boolean>(false);
+  const [isConfirmingDeleteUsers, setIsConfirmingDeleteUsers] = useState(true);
   const [page, setPage] = useState(1);
   const registersPerPage: number = 10;
   const { data, isLoading, isFetching, error, refetch } = useUsers(
@@ -95,15 +97,17 @@ export default function UserList() {
 
   const deleteUser = useMutation(
     async (userId: string) => {
-      try {
-        await api.delete("users/delete", {
+        const response = await api.delete("users/delete", {
           data: { userId },
         });
-      } catch (e) {
-        console.log(e);
-      }
+        
+        return response
     },
     {
+      onError: (e) => {
+        setIsErrorOnDelete(true)
+        console.log(e)
+      },
       onSuccess: () => {
         queryClient.invalidateQueries("users");
       },
@@ -115,29 +119,22 @@ export default function UserList() {
   }
 
   function handleCloseDeletingUsersModal() {
+    setIsCheck([]);
     setIsDeletingUsersModalOpen(false);
   }
 
-  const handleDeleteUser = async () => {
-    if (isCheck?.length === 1) {
-      if (!confirm("Deseja deletar este usuário?")) {
-        return;
-      }
-    } else {
-      if (!confirm(`Deseja deletar ${isCheck?.length} usuários?`)) {
-        return;
-      }
-    }
+  const handleConfirmDeleteUser = () => {
+    setIsConfirmingDeleteUsers(true);
+    handleOpenDeletingUsersModal();
+  };
 
+  const handleDeleteUser = async () => {
     try {
-      handleOpenDeletingUsersModal()
+      setIsConfirmingDeleteUsers(false);
       isCheck?.map(async (userId: string) => {
         await deleteUser.mutateAsync(userId);
         return userId;
       });
-
-      setIsCheck([])
-
     } catch (error: any) {
       if (error?.response?.status === 409) {
         return alert(error?.response?.data);
@@ -145,6 +142,7 @@ export default function UserList() {
       return console.error(error?.response?.data);
     }
   };
+
   return (
     <>
       <NextSeo title="jandash | Usuários" />
@@ -152,6 +150,7 @@ export default function UserList() {
         <Modal
           isOpen={isDeletingUsersModalOpen}
           onClose={() => handleCloseDeletingUsersModal()}
+          size="sm"
         >
           <ModalOverlay />
           <ModalContent
@@ -159,22 +158,65 @@ export default function UserList() {
             justifyContent="center"
             bg="gray.600"
           >
-            <ModalHeader>Deletando usuários</ModalHeader>
-            <ModalBody>
-              {
-              isCheck.length === 0
-              ? "Todos os usuários foram apagados."
-              : <Spinner />
-              }
+            <ModalHeader textAlign="center">
+              {isConfirmingDeleteUsers &&
+                (isCheck.length < 2
+                  ? "Tem certeza que quer deletar o usuário?"
+                  : `Tem certeza que quer deletar ${isCheck.length} usuários?`)}
+              {!isConfirmingDeleteUsers &&
+                (isCheck.length < 2
+                  ? "Deletando usuário..."
+                  : "Deletando usuários...")}
+            </ModalHeader>
+            {isErrorOnDelete ? (
+              <ModalBody>
+                Ocorreu um erro ao deletar o usuário.
               </ModalBody>
+            ) : (
+              <ModalBody>
+                {isConfirmingDeleteUsers && ""}
+                {!isConfirmingDeleteUsers &&
+                  (isCheck.length < 2 ? (
+                    "O usuário foi deletado."
+                  ) : (
+                    "Os usuários foram deletados."
+                  ))}
+              </ModalBody>
+            )}
 
             <ModalFooter justifyContent="center">
-              <Button
-                colorScheme="red"
-                onClick={() => handleCloseDeletingUsersModal()}
-              >
-                Ok
-              </Button>
+              {isConfirmingDeleteUsers ? (
+                <>
+                  <HStack spacing="8">
+                    <Button
+                      colorScheme="red"
+                      onClick={() => handleDeleteUser()}
+                      minW="100px"
+                    >
+                      Sim
+                    </Button>
+
+                    <Button
+                      colorScheme="red"
+                      onClick={() => {
+                        handleCloseDeletingUsersModal();
+                        setIsConfirmingDeleteUsers(true);
+                      }}
+                      minW="100px"
+                    >
+                      Não
+                    </Button>
+                  </HStack>
+                </>
+              ) : (
+                <Button
+                  colorScheme="red"
+                  onClick={() => handleCloseDeletingUsersModal()}
+                  isLoading={deleteUser?.isLoading}
+                >
+                  Ok
+                </Button>
+              )}
             </ModalFooter>
           </ModalContent>
         </Modal>
@@ -211,7 +253,7 @@ export default function UserList() {
                 </Button>
 
                 <Button
-                  onClick={() => handleDeleteUser()}
+                  onClick={() => handleConfirmDeleteUser()}
                   cursor="pointer"
                   as="a"
                   size="sm"
