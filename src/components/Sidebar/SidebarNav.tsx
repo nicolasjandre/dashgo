@@ -4,6 +4,7 @@ import {
   RiDashboardLine,
   RiGitMergeLine,
   RiInputMethodLine,
+  RiProfileLine
 } from "react-icons/ri";
 import { NavLink } from "./NavLink";
 import { NavSection } from "./NavSection";
@@ -17,6 +18,9 @@ export function SidebarNav() {
         </NavLink>
         <NavLink href="/users" icon={RiContactsLine}>
           Usuários
+        </NavLink>
+        <NavLink href="/profile" icon={RiProfileLine}>
+          Meu Perfil
         </NavLink>
       </NavSection>
 

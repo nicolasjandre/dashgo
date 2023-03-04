@@ -16,8 +16,7 @@ export function NotificationsNav() {
       borderRightWidth={1}
       borderColor="gray.700"
     >
-      <Icon color={asPath === "/profile" ? "red.500" : "gray.300"} cursor='pointer' onClick={() => route.push("/profile")} as={RiProfileLine} fontSize={[16, 20]} />
-      <Icon cursor='pointer' onClick={() => route.push('/api/auth/logout')} as={RiLogoutBoxLine} fontSize={[16, 20]} />
+      <Icon cursor='pointer' onClick={() => route.push('/api/auth/logout')} as={RiLogoutBoxLine} fontSize={[19, 22]} />
     </HStack>
   );
 }

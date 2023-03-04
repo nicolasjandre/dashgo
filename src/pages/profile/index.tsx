@@ -57,18 +57,6 @@ export default function EditUser() {
                   {isFetching && <Spinner color="gray.500" ml="4" size="sm" />}
                 </Text>
               </Flex>
-
-              <Button
-                onClick={() => refetch()}
-                cursor="pointer"
-                as="a"
-                size="sm"
-                fontSize="sm"
-                colorScheme="red"
-                leftIcon={<Icon as={RxUpdate} fontSize="16" />}
-              >
-                Atualizar
-              </Button>
             </Heading>
 
             <Divider my="6" borderColor="gray.700" />
@@ -139,10 +127,21 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const response = await getSession(ctx.req, ctx.res);
   const session = JSON.parse(JSON.stringify(response));
 
+  const lastUrl = ctx.req.headers.referer;
+
   if (!session) {
     return {
       redirect: {
         destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  if (!lastUrl?.includes("localhost:3000")) {
+    return {
+      redirect: {
+        destination: "/prefetch",
         permanent: false,
       },
     };

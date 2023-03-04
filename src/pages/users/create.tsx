@@ -49,7 +49,7 @@ const createUserFormSchema = yup.object().shape({
 });
 
 export default function CreateUser() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
   const router = useRouter();
 
   const createUser = useMutation(
@@ -119,6 +119,7 @@ export default function CreateUser() {
                   name="name"
                   type="text"
                   label="Nome completo:"
+                  isRequired
                 />
                 <Input
                   {...register("email")}
@@ -126,6 +127,7 @@ export default function CreateUser() {
                   name="email"
                   type="email"
                   label="E-mail:"
+                  isRequired
                 />
               </SimpleGrid>
 
@@ -165,6 +167,7 @@ export default function CreateUser() {
                   type="text"
                   label="Profissão:"
                   error={errors.profession}
+                  isRequired
                 />
               </SimpleGrid>
             </VStack>
@@ -201,10 +204,21 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const response = await getSession(ctx.req, ctx.res);
   const session = JSON.parse(JSON.stringify(response));
 
+  const lastUrl = ctx.req.headers.referer;
+
   if (!session) {
     return {
       redirect: {
         destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  if (!lastUrl?.includes("localhost:3000")) {
+    return {
+      redirect: {
+        destination: "/prefetch",
         permanent: false,
       },
     };

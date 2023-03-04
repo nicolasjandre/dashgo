@@ -115,6 +115,8 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const response = await getSession(ctx.req, ctx.res);
   const session = JSON.parse(JSON.stringify(response));
 
+  const lastUrl = ctx.req.headers.referer
+
   if (!session) {
     return {
       redirect: {
@@ -123,6 +125,16 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
       },
     };
   }
+
+  if (!lastUrl?.includes("localhost:3000")) {
+    return {
+      redirect: {
+        destination: "/prefetch",
+        permanent: false,
+      },
+    };
+  }
+
   return {
     props: {},
   }

@@ -1,15 +1,21 @@
 import { useUser } from "@auth0/nextjs-auth0/client";
 import { Avatar, Box, Flex, Text } from "@chakra-ui/react";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { useRealUser } from "../../hooks/useRealUser";
 
 export function Profile() {
+  const route = useRouter()
   const { user } = useUser();
-  const { data } = useRealUser(user?.email as string);
+  const { data, refetch } = useRealUser(user?.email as string);
+
+  if (!data?.user) {
+    refetch()
+  }
 
   return (
-    <Flex align="center">
-      <Box display={["none", "none", "block"]} mr="4" textAlign="right">
+    <Flex align="center" mr="2">
+      <Box display={["none", "none", "block"]} textAlign="right" pr='6'>
         <Text>{data?.user?.name}</Text>
         <Text color="gray.300" fontSize="small">
           {data?.user?.email}
@@ -24,9 +30,10 @@ export function Profile() {
       </Box>
 
       <Avatar
-        size={["sm", "md"]}
+        size="md"
         name={data?.user?.name!}
         src={data?.user?.picture !== "none" ? data?.user?.picture : undefined}
+        onClick={() => route.push("/profile")}
       />
     </Flex>
   );

@@ -25,19 +25,23 @@ module.exports = async (req: NextApiRequest, res: NextApiResponse) => {
         try {
             const users = await client.query(
                 q.Map(
-                    q.Paginate(q.Documents(q.Collection('users'))),
+                    q.Paginate(q.Documents(q.Collection('users')), {
+                        size: 500,
+                        
+                    }),
                     q.Lambda((x: any) => q.Get(x))
                 ))
 
             const { page = 1, per_page = 5 } = req.query;
 
-            const total = users.data.length
+            const total = await client.query(q.Count(q.Documents(q.Collection("users"))))
             const pageStart = (Number(page) - 1) * Number(per_page)
             const pageEnd = pageStart + Number(per_page)
 
             const paginatedUsers = users.data
                 .sort((a: User, b: User) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
                 .slice(pageStart, pageEnd);
+
 
             res.setHeader('X-Total-Count', total);
             res.setHeader('Access-Control-Expose-Headers', 'X-Total-Count');

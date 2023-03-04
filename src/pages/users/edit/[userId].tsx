@@ -22,6 +22,7 @@ import { Sidebar } from "../../../components/Sidebar";
 import { SubmitHandler, useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+import professions from "../../../utils/professions.json"
 
 import styles from "../../../styles/styles.module.scss";
 import { useMutation, useQueryClient } from "react-query";
@@ -72,7 +73,7 @@ export default function EditUser() {
             name: capitalize(user?.name),
             email: user?.email.toLowerCase(),
             sex: user?.sex,
-            profession: capitalize(user?.profession),
+            profession: user?.profession,
             id: userId,
           },
         });
@@ -202,6 +203,7 @@ export default function EditUser() {
                   error={errors.name}
                   name="name"
                   label="Nome completo:"
+                  isRequired
                 />
                 <Input
                   {...register("email")}
@@ -209,6 +211,7 @@ export default function EditUser() {
                   name="email"
                   type="email"
                   label="Novo e-mail:"
+                  isRequired
                 />
               </SimpleGrid>
 
@@ -242,13 +245,25 @@ export default function EditUser() {
                   </Select>
                 </Box>
 
-                <Input
-                  {...register("profession")}
-                  name="profession"
-                  type="text"
-                  label="Profissão:"
-                  error={errors.profession}
-                />
+                <Box>
+                  <FormLabel htmlFor="profession">Profissão: </FormLabel>
+                  <Select
+                    {...register("profession")}
+                    name="profession"
+                    id="profession"
+                    variant="filled"
+                    bgColor="gray.900"
+                    borderColor="gray.900"
+                    focusBorderColor="red.500"
+                    _hover={{ bgColor: "gray.900" }}
+                    _focus={{ bgColor: "gray.900" }}
+                    size="lg"
+                  >
+                    {professions.profissoes.map((profession: string) => (
+                      <option key={profession} value={profession} style={{ background: "#181B23" }}>{profession}</option>
+                    ))}
+                  </Select>
+                </Box>
               </SimpleGrid>
             </VStack>
 

@@ -11,6 +11,7 @@ import {
   FormLabel,
   Select,
 } from "@chakra-ui/react";
+import professions from "../../utils/professions.json"
 import { useRouter } from "next/router";
 import { Input } from "../../components/Form/Input";
 
@@ -40,10 +41,11 @@ interface EditUser {
 
 const editUserFormSchema = yup.object().shape({
   name: yup.string().required("Nome é obrigatório."),
+  profession: yup.string().required("Profissão é obrigatório.")
 });
 
 export default function EditUser() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
   const router = useRouter();
 
   const auth0User = useUser();
@@ -61,7 +63,7 @@ export default function EditUser() {
           user: {
             name: capitalize(user?.name),
             sex: user?.sex,
-            profession: capitalize(user?.profession),
+            profession: user?.profession,
             id: data?.user?.id,
           },
         });
@@ -129,12 +131,13 @@ export default function EditUser() {
                   error={formState?.errors.name}
                   name="name"
                   label="Nome completo:"
+                  isRequired
                 />
                 <Input
                   name="email"
                   type="email"
                   label="E-mail:"
-                  value={data?.user.email}
+                  value={data?.user?.email || ""}
                   isDisabled
                 />
               </SimpleGrid>
@@ -169,13 +172,25 @@ export default function EditUser() {
                   </Select>
                 </Box>
 
-                <Input
-                  {...register("profession")}
-                  name="profession"
-                  type="text"
-                  label="Profissão:"
-                  error={formState?.errors.profession}
-                />
+                <Box>
+                  <FormLabel htmlFor="profession">Profissão: </FormLabel>
+                  <Select
+                    {...register("profession")}
+                    name="profession"
+                    id="profession"
+                    variant="filled"
+                    bgColor="gray.900"
+                    borderColor="gray.900"
+                    focusBorderColor="red.500"
+                    _hover={{ bgColor: "gray.900" }}
+                    _focus={{ bgColor: "gray.900" }}
+                    size="lg"
+                  >
+                    {professions.profissoes.map((profession: string) => (
+                      <option key={profession} value={profession} style={{ background: "#181B23" }}>{profession}</option>
+                    ))}
+                  </Select>
+                </Box>
               </SimpleGrid>
             </VStack>
 
@@ -211,10 +226,21 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const response = await getSession(ctx.req, ctx.res);
   const session = JSON.parse(JSON.stringify(response));
 
+  const lastUrl = ctx.req.headers.referer;
+
   if (!session) {
     return {
       redirect: {
         destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  if (!lastUrl?.includes("localhost:3000")) {
+    return {
+      redirect: {
+        destination: "/prefetch",
         permanent: false,
       },
     };

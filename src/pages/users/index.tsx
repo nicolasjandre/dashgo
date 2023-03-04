@@ -15,6 +15,12 @@ import {
   useBreakpointValue,
   Spinner,
   HStack,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -30,10 +36,16 @@ import { getSession } from "@auth0/nextjs-auth0";
 import { GetServerSideProps } from "next";
 import { getUser } from "../../hooks/useUser";
 import { NextSeo } from "next-seo";
-import { useQueryClient } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
+import { BsTrash } from "react-icons/bs";
+import { api } from "../../services/axios";
 
 export default function UserList() {
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
+  const [isCheckAll, setIsCheckAll] = useState(false);
+  const [isCheck, setIsCheck] = useState<string[]>([]);
+  const [isDeletingUsersModalOpen, setIsDeletingUsersModalOpen] =
+    useState(false);
   const [page, setPage] = useState(1);
   const registersPerPage: number = 10;
   const { data, isLoading, isFetching, error, refetch } = useUsers(
@@ -52,6 +64,8 @@ export default function UserList() {
     const isBrowser = () => typeof window !== "undefined";
 
     setPage(number);
+    setIsCheckAll(false);
+    setIsCheck([]);
 
     if (!isBrowser()) return;
     window.scrollTo({ top: 0 });
@@ -63,10 +77,107 @@ export default function UserList() {
     });
   }
 
+  function handleSelectAll(e: React.FormEvent<HTMLInputElement>) {
+    setIsCheckAll(!isCheckAll);
+    setIsCheck(data!.users.map((user) => user?.id));
+    if (isCheckAll) {
+      setIsCheck([]);
+    }
+  }
+
+  function handleClick(e: React.FormEvent<HTMLInputElement>) {
+    const { id, checked } = e.target as HTMLInputElement;
+    setIsCheck([...(isCheck as string[]), id]);
+    if (!checked) {
+      setIsCheck(isCheck!.filter((item) => item !== id));
+    }
+  }
+
+  const deleteUser = useMutation(
+    async (userId: string) => {
+      try {
+        await api.delete("users/delete", {
+          data: { userId },
+        });
+      } catch (e) {
+        console.log(e);
+      }
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries("users");
+      },
+    }
+  );
+
+  function handleOpenDeletingUsersModal() {
+    setIsDeletingUsersModalOpen(true);
+  }
+
+  function handleCloseDeletingUsersModal() {
+    setIsDeletingUsersModalOpen(false);
+  }
+
+  const handleDeleteUser = async () => {
+    if (isCheck?.length === 1) {
+      if (!confirm("Deseja deletar este usuário?")) {
+        return;
+      }
+    } else {
+      if (!confirm(`Deseja deletar ${isCheck?.length} usuários?`)) {
+        return;
+      }
+    }
+
+    try {
+      handleOpenDeletingUsersModal()
+      isCheck?.map(async (userId: string) => {
+        await deleteUser.mutateAsync(userId);
+        return userId;
+      });
+
+      setIsCheck([])
+
+    } catch (error: any) {
+      if (error?.response?.status === 409) {
+        return alert(error?.response?.data);
+      }
+      return console.error(error?.response?.data);
+    }
+  };
   return (
     <>
       <NextSeo title="jandash | Usuários" />
       <Box>
+        <Modal
+          isOpen={isDeletingUsersModalOpen}
+          onClose={() => handleCloseDeletingUsersModal()}
+        >
+          <ModalOverlay />
+          <ModalContent
+            alignItems="center"
+            justifyContent="center"
+            bg="gray.600"
+          >
+            <ModalHeader>Deletando usuários</ModalHeader>
+            <ModalBody>
+              {
+              isCheck.length === 0
+              ? "Todos os usuários foram apagados."
+              : <Spinner />
+              }
+              </ModalBody>
+
+            <ModalFooter justifyContent="center">
+              <Button
+                colorScheme="red"
+                onClick={() => handleCloseDeletingUsersModal()}
+              >
+                Ok
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
         <Header />
 
         <Flex w="100%" my="6" maxWidth={1480} mx="auto" px={["2", "4", "6"]}>
@@ -100,6 +211,18 @@ export default function UserList() {
                 </Button>
 
                 <Button
+                  onClick={() => handleDeleteUser()}
+                  cursor="pointer"
+                  as="a"
+                  size="sm"
+                  fontSize="sm"
+                  colorScheme="red"
+                  leftIcon={<Icon as={BsTrash} fontSize="16" />}
+                >
+                  Deletar
+                </Button>
+
+                <Button
                   onClick={() => router.push("/users/create")}
                   cursor="pointer"
                   as="a"
@@ -127,7 +250,12 @@ export default function UserList() {
                   <Thead>
                     <Tr>
                       <Th px={["2", "4", "6"]} color="gray.300" width="8">
-                        <Checkbox colorScheme="red" />
+                        <Checkbox
+                          colorScheme="red"
+                          onChange={(e: React.FormEvent<HTMLInputElement>) =>
+                            handleSelectAll(e)
+                          }
+                        />
                       </Th>
                       <Th p={["2", "4", "6"]}>Usuário</Th>
                       {isWideVersion && <Th>Data de cadastro</Th>}
@@ -138,7 +266,14 @@ export default function UserList() {
                     {data?.users?.map((user) => (
                       <Tr key={user.id}>
                         <Td px={["2", "4", "6"]}>
-                          <Checkbox colorScheme="red" />
+                          <Checkbox
+                            id={user?.id}
+                            onChange={(e: React.FormEvent<HTMLInputElement>) =>
+                              handleClick(e)
+                            }
+                            isChecked={isCheck?.includes(user.id)}
+                            colorScheme="red"
+                          />
                         </Td>
                         <Td p={["2", "4", "6"]}>
                           <Box>
@@ -205,10 +340,21 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const response = await getSession(ctx.req, ctx.res);
   const session = JSON.parse(JSON.stringify(response));
 
+  const lastUrl = ctx.req.headers.referer;
+
   if (!session) {
     return {
       redirect: {
         destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  if (!lastUrl?.includes("localhost:3000")) {
+    return {
+      redirect: {
+        destination: "/prefetch",
         permanent: false,
       },
     };

@@ -29,7 +29,7 @@ import { NextSeo } from "next-seo";
 export default function EditUser() {
   const router = useRouter();
   const userId = String(router.query.userId);
-  const queryClient = useQueryClient()
+  const queryClient = useQueryClient();
 
   const { data, isFetching, refetch } = useUser(userId);
 
@@ -51,7 +51,7 @@ export default function EditUser() {
   );
 
   const handleDeleteUser = async (userId: string) => {
-    if (!confirm("Deseja apagar este usuário?")) {
+    if (!confirm("Deseja deletar este usuário?")) {
       return;
     }
 
@@ -64,7 +64,7 @@ export default function EditUser() {
       return console.error(error?.response?.data);
     }
 
-    alert("Usuário apagado com sucesso!");
+    alert("Usuário deletado com sucesso!");
     router.push("/users");
   };
 
@@ -116,7 +116,7 @@ export default function EditUser() {
                   colorScheme="red"
                   leftIcon={<Icon as={BsTrash} fontSize="16" />}
                 >
-                  Apagar
+                  Deletar
                 </Button>
               </HStack>
             </Heading>
@@ -189,10 +189,21 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const response = await getSession(ctx.req, ctx.res);
   const session = JSON.parse(JSON.stringify(response));
 
+  const lastUrl = ctx.req.headers.referer;
+
   if (!session) {
     return {
       redirect: {
         destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  if (!lastUrl?.includes("localhost:3000")) {
+    return {
+      redirect: {
+        destination: "/prefetch",
         permanent: false,
       },
     };
