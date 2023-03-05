@@ -25,47 +25,64 @@ import { useUser } from "../../hooks/useUser";
 import { useMutation, useQueryClient } from "react-query";
 import { api } from "../../services/axios";
 import { NextSeo } from "next-seo";
+import { ModalComponent } from "../../components/Modal";
+import { useState } from "react";
 
 export default function EditUser() {
   const router = useRouter();
   const userId = String(router.query.userId);
   const queryClient = useQueryClient();
+  const [isErrorOnDelete, setIsErrorOnDelete] = useState(false);
+  const [isDeletingUsersModalOpen, setIsDeletingUsersModalOpen] =
+    useState<boolean>(false);
+  const [isConfirmingDeleteUsers, setIsConfirmingDeleteUsers] = useState(true);
 
   const { data, isFetching, refetch } = useUser(userId);
 
   const deleteUser = useMutation(
     async (userId: string) => {
-      try {
-        await api.delete("users/delete", {
-          data: { userId },
-        });
-      } catch (e) {
-        console.log(e);
-      }
+      const response = await api.delete("users/delete", {
+        data: { userId },
+      });
+
+      return response;
     },
     {
+      onError: (e) => {
+        setIsErrorOnDelete(true);
+        console.log(e);
+      },
       onSuccess: () => {
         queryClient.invalidateQueries("users");
       },
     }
   );
 
-  const handleDeleteUser = async (userId: string) => {
-    if (!confirm("Deseja deletar este usuário?")) {
-      return;
-    }
+  function handleOpenDeletingUsersModal() {
+    setIsDeletingUsersModalOpen(true);
+  }
 
+  function handleCloseDeletingUsersModal() {
+    setIsErrorOnDelete(false);
+    setIsDeletingUsersModalOpen(false);
+  }
+
+  const handleConfirmDeleteUser = () => {
+    setIsConfirmingDeleteUsers(true);
+    handleOpenDeletingUsersModal();
+  };
+
+  const handleDeleteUser = async (userId: string) => {
     try {
+      setIsConfirmingDeleteUsers(false);
       await deleteUser.mutateAsync(userId);
+      return userId;
     } catch (error: any) {
       if (error?.response?.status === 409) {
         return alert(error?.response?.data);
       }
       return console.error(error?.response?.data);
     }
-
-    alert("Usuário deletado com sucesso!");
-    router.push("/users");
   };
 
   return (
@@ -73,6 +90,18 @@ export default function EditUser() {
       <NextSeo title={`Perfil | ${data?.user?.name}`} />
       <Box>
         <Header />
+
+        <ModalComponent
+          handleCloseDeletingUsersModal={handleCloseDeletingUsersModal}
+          handleDeleteUser={handleDeleteUser}
+          isConfirmingDeleteUsers={isConfirmingDeleteUsers}
+          isDeletingUsersModalOpen={isDeletingUsersModalOpen}
+          isErrorOnDelete={isErrorOnDelete}
+          isLoading={deleteUser.isLoading}
+          setIsConfirmingDeleteUsers={setIsConfirmingDeleteUsers}
+          usersLength={1}
+          userId={userId}
+        />
 
         <Flex w="100%" my="6" maxWidth={1480} mx="auto" px="6">
           <Sidebar />
@@ -108,7 +137,7 @@ export default function EditUser() {
                 </Button>
 
                 <Button
-                  onClick={() => handleDeleteUser(userId)}
+                  onClick={() => handleConfirmDeleteUser()}
                   cursor="pointer"
                   as="a"
                   size="sm"

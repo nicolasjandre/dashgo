@@ -21,7 +21,7 @@ export function Profile() {
           {data?.user?.email}
         </Text>
         {data?.user?.needUpdateProfile && (
-          <Link href="/profile">
+          <Link href="/profile/edit">
             <Text pt="2" color="red.400" fontSize="sm">
               Novo usuário? Edite seu perfil!
             </Text>

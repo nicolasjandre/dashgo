@@ -15,15 +15,9 @@ import {
   useBreakpointValue,
   Spinner,
   HStack,
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { RiAddLine, RiPencilLine } from "react-icons/ri";
 import { RxUpdate } from "react-icons/rx";
 import NextLink from "next/link";
@@ -39,6 +33,7 @@ import { NextSeo } from "next-seo";
 import { useMutation, useQueryClient } from "react-query";
 import { BsTrash } from "react-icons/bs";
 import { api } from "../../services/axios";
+import { ModalComponent } from "../../components/Modal";
 
 export default function UserList() {
   const queryClient = useQueryClient();
@@ -54,6 +49,14 @@ export default function UserList() {
     page,
     registersPerPage
   );
+
+  const lastPage = Math.ceil(data?.totalCount! / registersPerPage!);
+
+  useEffect(() => {
+    if (page > lastPage) {
+      setPage(lastPage);
+    }
+  }, [lastPage]);
 
   const router = useRouter();
 
@@ -148,95 +151,18 @@ export default function UserList() {
     <>
       <NextSeo title="jandash | Usuários" />
       <Box>
-        <Modal
-          isOpen={isDeletingUsersModalOpen}
-          onClose={() => handleCloseDeletingUsersModal()}
-          size="sm"
-        >
-          <ModalOverlay />
-          <ModalContent
-            alignItems="center"
-            justifyContent="center"
-            bg="gray.600"
-          >
-            {isErrorOnDelete ? (
-              <ModalHeader color="red" textAlign="center">
-                Erro!
-              </ModalHeader>
-            ) : (
-              isConfirmingDeleteUsers && (
-                <ModalHeader textAlign="center">
-                  {isCheck.length < 2
-                    ? "Tem certeza que quer deletar o usuário?"
-                    : `Tem certeza que quer deletar ${isCheck.length} usuários?`}
-                </ModalHeader>
-              )
-            )}
-            {!isConfirmingDeleteUsers &&
-              deleteUser?.isLoading &&
-              (isCheck.length < 2 ? (
-                <ModalHeader>Deletando usuário...</ModalHeader>
-              ) : (
-                <ModalHeader>Deletando usuários...</ModalHeader>
-              ))}
-            {!isErrorOnDelete &&
-              !isConfirmingDeleteUsers &&
-              !deleteUser?.isLoading && (
-                <ModalHeader color="#00FF00	" textAlign="center">
-                  Sucesso!
-                </ModalHeader>
-              )}
-            {isErrorOnDelete ? (
-              <ModalBody textAlign="center">
-                Ocorreu um erro ao deletar o usuário.
-              </ModalBody>
-            ) : (
-              <ModalBody textAlign="center">
-                {isConfirmingDeleteUsers && ""}
-                {!isConfirmingDeleteUsers &&
-                  !deleteUser?.isLoading &&
-                  (isCheck.length < 2
-                    ? "Usuário deletado."
-                    : "Usuários deletados.")}
-              </ModalBody>
-            )}
+        <ModalComponent
+          handleCloseDeletingUsersModal={handleCloseDeletingUsersModal}
+          handleDeleteUser={handleDeleteUser}
+          isConfirmingDeleteUsers={isConfirmingDeleteUsers}
+          isDeletingUsersModalOpen={isDeletingUsersModalOpen}
+          isErrorOnDelete={isErrorOnDelete}
+          isLoading={deleteUser.isLoading}
+          setIsConfirmingDeleteUsers={setIsConfirmingDeleteUsers}
+          usersLength={isCheck.length}
+          userId={""}
+        />
 
-            <ModalFooter justifyContent="center">
-              {isConfirmingDeleteUsers ? (
-                <>
-                  <HStack spacing="8">
-                    <Button
-                      colorScheme="red"
-                      onClick={() => handleDeleteUser()}
-                      minW="100px"
-                    >
-                      Sim
-                    </Button>
-
-                    <Button
-                      colorScheme="red"
-                      onClick={() => {
-                        handleCloseDeletingUsersModal();
-                        setIsConfirmingDeleteUsers(true);
-                      }}
-                      minW="100px"
-                    >
-                      Não
-                    </Button>
-                  </HStack>
-                </>
-              ) : (
-                <Button
-                  colorScheme="red"
-                  onClick={() => handleCloseDeletingUsersModal()}
-                  isLoading={deleteUser?.isLoading}
-                >
-                  Ok
-                </Button>
-              )}
-            </ModalFooter>
-          </ModalContent>
-        </Modal>
         <Header />
 
         <Flex w="100%" my="6" maxWidth={1480} mx="auto" px={["2", "4", "6"]}>
