@@ -85,6 +85,7 @@ export default function EditUser() {
 
   const oldUser = {
     name: data?.user?.name,
+    email: data?.user?.email,
     profession: data?.user?.profession,
     sex: data?.user?.sex,
   };
