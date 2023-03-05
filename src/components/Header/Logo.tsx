@@ -7,7 +7,7 @@ export function Logo({ ...rest }) {
       <Text
         display="block"
         cursor="default"
-        fontSize={["2xl", "3xl"]}
+        fontSize={["27px", "3xl"]}
         fontWeight="bold"
         letterSpacing="tight"
         {...rest}

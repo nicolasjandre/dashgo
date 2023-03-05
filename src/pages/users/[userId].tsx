@@ -10,6 +10,7 @@ import {
   Icon,
   Avatar,
   Stack,
+  useBreakpointValue,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 
@@ -25,8 +26,8 @@ import { useUser } from "../../hooks/useUser";
 import { useMutation, useQueryClient } from "react-query";
 import { api } from "../../services/axios";
 import { NextSeo } from "next-seo";
-import { ModalComponent } from "../../components/Modal";
-import { useState } from "react";
+import { ModalComponent } from "../../components/DeletingUsersModal";
+import { useEffect, useState } from "react";
 
 export default function EditUser() {
   const router = useRouter();
@@ -37,7 +38,18 @@ export default function EditUser() {
     useState<boolean>(false);
   const [isConfirmingDeleteUsers, setIsConfirmingDeleteUsers] = useState(true);
 
+  const isWideVersion = useBreakpointValue({
+    base: false,
+    md: true
+  });
+
   const { data, isFetching, refetch } = useUser(userId);
+
+  useEffect(() => {
+    if (!data?.user) {
+      refetch()
+    }
+  }, [data?.user])
 
   const deleteUser = useMutation(
     async (userId: string) => {
@@ -115,39 +127,13 @@ export default function EditUser() {
               fontWeight="normal"
               flexDir={["column", "column", "row"]}
             >
-              <Flex alignItems="center" gap="3">
-                <Avatar size={["sm", "md"]} name={data?.user?.name} />
-                <Text fontSize={["16", "20", "26"]} as="span" color="red.500">
+              <Flex flexDir={["column", "column", "row"]} alignItems="center" gap="3">
+                <Avatar size={["md", "lg"]} name={data?.user?.name} />
+                <Text fontSize={["22", "26"]} as="span" color="red.500">
                   {data?.user?.name}
                   {isFetching && <Spinner color="gray.500" ml="4" size="sm" />}
                 </Text>
               </Flex>
-
-              <HStack mt={["4", "4", "0"]}>
-                <Button
-                  onClick={() => refetch()}
-                  cursor="pointer"
-                  as="a"
-                  size="sm"
-                  fontSize="sm"
-                  colorScheme="red"
-                  leftIcon={<Icon as={RxUpdate} fontSize="16" />}
-                >
-                  Atualizar
-                </Button>
-
-                <Button
-                  onClick={() => handleConfirmDeleteUser()}
-                  cursor="pointer"
-                  as="a"
-                  size="sm"
-                  fontSize="sm"
-                  colorScheme="red"
-                  leftIcon={<Icon as={BsTrash} fontSize="16" />}
-                >
-                  Deletar
-                </Button>
-              </HStack>
             </Heading>
 
             <Divider my="6" borderColor="gray.700" />
@@ -197,13 +183,28 @@ export default function EditUser() {
                 >
                   Voltar
                 </Button>
+
+                <Button
+                  onClick={() => handleConfirmDeleteUser()}
+                  cursor="pointer"
+                  as="a"
+                  size={["sm", "md"]}
+                  iconSpacing={["0", "0", "2"]}
+                  fontSize="sm"
+                  colorScheme="red"
+                  leftIcon={<Icon as={BsTrash} fontSize="16" />}
+                >
+                  {isWideVersion ? "Deletar" : ""}
+                </Button>
+
                 <Button
                   size={["sm", "md"]}
                   colorScheme="red"
+                  iconSpacing={["0", "0", "2"]}
                   onClick={() => router.push(`/users/edit/${userId}`)}
                   leftIcon={<Icon as={RiPencilLine} fontSize="18" />}
                 >
-                  Editar
+                  {isWideVersion ? "Editar" : ""}
                 </Button>
               </HStack>
             </Flex>

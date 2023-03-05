@@ -9,13 +9,16 @@ import { UserProvider } from "@auth0/nextjs-auth0/client";
 import { useState } from "react";
 
 export default function App({ Component, pageProps }: AppProps) {
-  const [queryClient] = useState(() => new QueryClient({
-    defaultOptions: {
-      queries: {
-        staleTime: 1000 * 60 * 2, // 2 minutes
-      },
-    },
-  }));
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 1000 * 60 * 2, // 2 minutes
+          },
+        },
+      })
+  );
 
   return (
     <QueryClientProvider client={queryClient}>

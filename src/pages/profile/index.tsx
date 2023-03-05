@@ -15,8 +15,6 @@ import { useRouter } from "next/router";
 
 import { Header } from "../../components/Header";
 import { Sidebar } from "../../components/Sidebar";
-
-import { RxUpdate } from "react-icons/rx";
 import { RiPencilLine } from "react-icons/ri";
 import { getSession } from "@auth0/nextjs-auth0";
 import { GetServerSideProps } from "next";
@@ -95,17 +93,6 @@ export default function EditUser() {
 
             <Flex mt="8" justify="flex-end">
               <HStack spacing="4">
-                <Button
-                  size={["sm", "md"]}
-                  onClick={() => {
-                    router.push("/users");
-                  }}
-                  cursor="pointer"
-                  as="a"
-                  colorScheme="whiteAlpha"
-                >
-                  Voltar
-                </Button>
                 <Button
                   size={["sm", "md"]}
                   colorScheme="red"

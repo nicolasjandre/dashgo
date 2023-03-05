@@ -11,7 +11,7 @@ import {
   FormLabel,
   Select,
 } from "@chakra-ui/react";
-import professions from "../../utils/professions.json"
+import professions from "../../utils/professions.json";
 import { useRouter } from "next/router";
 import { Input } from "../../components/Form/Input";
 
@@ -41,7 +41,7 @@ interface EditUser {
 
 const editUserFormSchema = yup.object().shape({
   name: yup.string().required("Nome é obrigatório."),
-  profession: yup.string().required("Profissão é obrigatório.")
+  profession: yup.string().required("Profissão é obrigatório."),
 });
 
 export default function EditUser() {
@@ -187,7 +187,13 @@ export default function EditUser() {
                     size="lg"
                   >
                     {professions.profissoes.map((profession: string) => (
-                      <option key={profession} value={profession} style={{ background: "#181B23" }}>{profession}</option>
+                      <option
+                        key={profession}
+                        value={profession}
+                        style={{ background: "#181B23" }}
+                      >
+                        {profession}
+                      </option>
                     ))}
                   </Select>
                 </Box>

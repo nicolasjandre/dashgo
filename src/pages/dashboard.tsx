@@ -70,7 +70,7 @@ export default function Dashboard() {
   return (
     <>
       <NextSeo title="jandash | Dashboard" />
-      <Flex flexDir="column" h="100vh">
+      <Flex flexDir="column" minH="100vh">
         <Header />
 
         <Flex w="100%" my="6" maxWidth={1480} mx="auto" px="6">
@@ -115,7 +115,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const response = await getSession(ctx.req, ctx.res);
   const session = JSON.parse(JSON.stringify(response));
 
-  const lastUrl = ctx.req.headers.referer
+  const lastUrl = ctx.req.headers.referer;
 
   if (!session) {
     return {
@@ -137,5 +137,5 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
 
   return {
     props: {},
-  }
+  };
 };

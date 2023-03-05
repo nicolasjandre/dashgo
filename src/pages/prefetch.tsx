@@ -65,7 +65,7 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
         sex: "Não informado",
         profession: "Não informado",
       });
-      } catch (err) {
+    } catch (err) {
       console.log(err);
     }
   }

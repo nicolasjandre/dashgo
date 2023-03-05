@@ -33,7 +33,7 @@ import { NextSeo } from "next-seo";
 import { useMutation, useQueryClient } from "react-query";
 import { BsTrash } from "react-icons/bs";
 import { api } from "../../services/axios";
-import { ModalComponent } from "../../components/Modal";
+import { ModalComponent } from "../../components/DeletingUsersModal";
 
 export default function UserList() {
   const queryClient = useQueryClient();
