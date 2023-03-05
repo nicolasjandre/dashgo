@@ -10,14 +10,15 @@ import {
   FormErrorMessage,
 } from "@chakra-ui/react";
 import { forwardRef, ForwardRefRenderFunction, useState } from "react";
-import { FieldError, FieldErrorsImpl, Merge } from "react-hook-form";
+import { FieldError } from "react-hook-form";
 
 import { RiEyeLine, RiEyeOffLine } from "react-icons/ri";
 
 interface InputProps extends ChakraInputProps {
   name: string;
   label?: string;
-  error?: FieldError | Merge<FieldError, FieldErrorsImpl<any>>;
+  error?: FieldError;
+  type?: string;
 }
 
 const InputBase: ForwardRefRenderFunction<HTMLInputElement, InputProps> = (
@@ -52,7 +53,7 @@ const InputBase: ForwardRefRenderFunction<HTMLInputElement, InputProps> = (
         </InputRightElement>
       </InputGroup>
 
-      {!!error && <FormErrorMessage>{String(error.message)}</FormErrorMessage>}
+      {!!error && <FormErrorMessage>{String(error?.message)}</FormErrorMessage>}
     </FormControl>
   ) : (
     <FormControl isInvalid={!!error}>

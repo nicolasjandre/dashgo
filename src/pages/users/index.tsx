@@ -33,7 +33,7 @@ import { NextSeo } from "next-seo";
 import { useMutation, useQueryClient } from "react-query";
 import { BsTrash } from "react-icons/bs";
 import { api } from "../../services/axios";
-import { ModalComponent } from "../../components/DeletingUsersModal";
+import { DeletingUsersModal } from "../../components/DeletingUsersModal";
 
 export default function UserList() {
   const queryClient = useQueryClient();
@@ -98,6 +98,21 @@ export default function UserList() {
     }
   }
 
+  function handleOpenDeletingUsersModal() {
+    setIsDeletingUsersModalOpen(true);
+  }
+
+  function handleCloseDeletingUsersModal() {
+    setIsErrorOnDelete(false);
+    setIsCheck([]);
+    setIsDeletingUsersModalOpen(false);
+  }
+
+  const handleConfirmDeleteUser = () => {
+    setIsConfirmingDeleteUsers(true);
+    handleOpenDeletingUsersModal();
+  };
+
   const deleteUser = useMutation(
     async (userId: string) => {
       const response = await api.delete("users/delete", {
@@ -117,32 +132,13 @@ export default function UserList() {
     }
   );
 
-  function handleOpenDeletingUsersModal() {
-    setIsDeletingUsersModalOpen(true);
-  }
-
-  function handleCloseDeletingUsersModal() {
-    setIsErrorOnDelete(false);
-    setIsCheck([]);
-    setIsDeletingUsersModalOpen(false);
-  }
-
-  const handleConfirmDeleteUser = () => {
-    setIsConfirmingDeleteUsers(true);
-    handleOpenDeletingUsersModal();
-  };
-
   const handleDeleteUser = async () => {
     try {
       setIsConfirmingDeleteUsers(false);
       isCheck?.map(async (userId: string) => {
         await deleteUser.mutateAsync(userId);
-        return userId;
       });
     } catch (error: any) {
-      if (error?.response?.status === 409) {
-        return alert(error?.response?.data);
-      }
       return console.error(error?.response?.data);
     }
   };
@@ -151,7 +147,7 @@ export default function UserList() {
     <>
       <NextSeo title="jandash | Usuários" />
       <Box>
-        <ModalComponent
+        <DeletingUsersModal
           handleCloseDeletingUsersModal={handleCloseDeletingUsersModal}
           handleDeleteUser={handleDeleteUser}
           isConfirmingDeleteUsers={isConfirmingDeleteUsers}

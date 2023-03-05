@@ -33,31 +33,49 @@ import { getSession } from "@auth0/nextjs-auth0";
 import { GetServerSideProps } from "next";
 import { NextSeo } from "next-seo";
 import { capitalize } from "../../../utils/capitalize";
+import { useState } from "react";
+import { deepEqual } from "../../../utils/deepEqual";
+import { SelectComponent } from "../../../components/Form/Select";
+import { EditingUsersModal } from "../../../components/EditingUsersModal";
 
-interface EditUser {
+interface User {
   name: string;
-  email: string;
+  id?: string;
+  email?: string;
   sex: string;
   profession: string;
+}
+
+interface EditUser extends User {
+  user: User;
 }
 
 const emailRegex =
   /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
 const editUserFormSchema = yup.object().shape({
-  name: yup.string().required("Nome é obrigatório."),
+  name: yup.string().required("Nome é obrigatório"),
 
   email: yup
     .string()
     .required("E-mail é obrigatório.")
     .email("Digite um e-mail válido.")
-    .matches(emailRegex, "Digite um e-mail válido."),
+    .matches(emailRegex, "Digite um e-mail válido"),
+
+  profession: yup.string().required("Profissão é obrigatório"),
+  sex: yup.string().required("Sexo é obrigatório"),
 });
 
 export default function EditUser() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const userId = String(router.query.userId);
+  const [isErrorOnEdit, setIsErrorOnEdit] = useState(false);
+  const [isEditingUserModalOpen, setIsEditingUserModalOpen] =
+    useState<boolean>(false);
+  const [isConfirmingEditUser, setIsConfirmingEditUser] = useState(true);
+  const [isContentToEditUser, setIsContentToEditUser] =
+    useState<EditUser | null>(null);
 
   const { data, isFetching, refetch } = useUser(userId);
 
@@ -65,43 +83,63 @@ export default function EditUser() {
     resolver: yupResolver(editUserFormSchema),
   });
 
+  const oldUser = {
+    name: data?.user?.name,
+    profession: data?.user?.profession,
+    sex: data?.user?.sex,
+  };
+
+  function handleOpenEditingUserModal() {
+    setIsEditingUserModalOpen(true);
+  }
+
+  function handleCloseEditingUserModal() {
+    setIsContentToEditUser(null);
+    setIsErrorOnEdit(false);
+    setIsEditingUserModalOpen(false);
+  }
+
+  const handleConfirmEditUser: SubmitHandler<EditUser> = (data) => {
+    setIsContentToEditUser(data);
+    setIsConfirmingEditUser(true);
+    handleOpenEditingUserModal();
+
+    if (deepEqual(data, oldUser)) {
+      setIsContentToEditUser(null);
+      return;
+    }
+  };
+
   const editUser = useMutation(
     async (user: EditUser) => {
-      try {
-        const response = await api.patch(`users/update`, {
-          user: {
-            name: capitalize(user?.name),
-            email: user?.email.toLowerCase(),
-            sex: user?.sex,
-            profession: user?.profession,
-            id: userId,
-          },
-        });
-
-        return response;
-      } catch (e) {
-        console.log(e);
-      }
+      await api.patch(`users/update`, {
+        user: {
+          name: capitalize(user?.name),
+          email: user?.email!.toLowerCase(),
+          sex: user?.sex,
+          profession: user?.profession,
+          id: userId,
+        },
+      });
     },
     {
+      onError: (e) => {
+        setIsErrorOnEdit(true);
+        console.log(e);
+      },
       onSuccess: () => {
         queryClient.invalidateQueries("users");
       },
     }
   );
-  const { errors } = formState;
 
   const handleEditUser: SubmitHandler<EditUser> = async (data) => {
     try {
+      setIsConfirmingEditUser(false);
       await editUser.mutateAsync(data);
     } catch (error: any) {
-      if (error?.response?.status === 409) {
-        return alert(error?.response?.data);
-      }
       return console.error(error?.response?.data);
     }
-    alert("Usuário editado com sucesso!");
-    router.push("/users");
   };
 
   return (
@@ -109,6 +147,16 @@ export default function EditUser() {
       <NextSeo title={`Editar | ${data?.user?.name}`} />
       <Box>
         <Header />
+        <EditingUsersModal
+          handleCloseEditingUsersModal={handleCloseEditingUserModal}
+          handleEditUser={handleEditUser}
+          isConfirmingEditUser={isConfirmingEditUser}
+          isEditingUserModalOpen={isEditingUserModalOpen}
+          isErrorOnEdit={isErrorOnEdit}
+          isLoading={editUser.isLoading}
+          setIsConfirmingEditUser={setIsConfirmingEditUser}
+          data={isContentToEditUser}
+        />
 
         <Flex w="100%" my="6" maxWidth={1480} mx="auto" px="6">
           <Sidebar />
@@ -200,76 +248,68 @@ export default function EditUser() {
               <SimpleGrid minChildWidth="220px" spacing="8" w="100%">
                 <Input
                   {...register("name")}
-                  error={errors.name}
+                  error={formState?.errors?.name}
                   name="name"
                   label="Nome completo:"
+                  defaultValue={data?.user?.name}
                   isRequired
                 />
                 <Input
                   {...register("email")}
-                  error={errors.email}
+                  error={formState?.errors?.email}
                   name="email"
                   type="email"
                   label="Novo e-mail:"
+                  defaultValue={data?.user?.email}
                   isRequired
                 />
               </SimpleGrid>
 
               <SimpleGrid minChildWidth="220px" spacing="8" w="100%">
-                <Box>
-                  <FormLabel htmlFor="sex">Gênero: </FormLabel>
-                  <Select
-                    {...register("sex")}
-                    name="sex"
-                    id="sex"
-                    variant="filled"
-                    bgColor="gray.900"
-                    borderColor="gray.900"
-                    focusBorderColor="red.500"
-                    _hover={{ bgColor: "gray.900" }}
-                    _focus={{ bgColor: "gray.900" }}
-                    size="lg"
-                  >
-                    <option style={{ background: "#181B23" }} value="Masculino">
-                      Masculino
-                    </option>
-                    <option style={{ background: "#181B23" }} value="Feminino">
-                      Feminino
-                    </option>
+                <SelectComponent
+                  {...register("profession")}
+                  error={formState?.errors?.profession}
+                  name="profession"
+                  label="Profissão:"
+                  defaultValue={data?.user?.profession}
+                >
+                  <option style={{ background: "#181B23" }} value="">
+                    Selecione
+                  </option>
+                  {professions.profissoes.map((profession: string) => (
                     <option
+                      key={profession}
+                      value={profession}
                       style={{ background: "#181B23" }}
-                      value="Prefiro não responder"
                     >
-                      Prefiro não responder
+                      {profession}
                     </option>
-                  </Select>
-                </Box>
+                  ))}
+                </SelectComponent>
 
-                <Box>
-                  <FormLabel htmlFor="profession">Profissão: </FormLabel>
-                  <Select
-                    {...register("profession")}
-                    name="profession"
-                    id="profession"
-                    variant="filled"
-                    bgColor="gray.900"
-                    borderColor="gray.900"
-                    focusBorderColor="red.500"
-                    _hover={{ bgColor: "gray.900" }}
-                    _focus={{ bgColor: "gray.900" }}
-                    size="lg"
+                <SelectComponent
+                  {...register("sex")}
+                  error={formState?.errors?.sex}
+                  name="sex"
+                  label="Sexo:"
+                  defaultValue={data?.user?.sex}
+                >
+                  <option style={{ background: "#181B23" }} value="">
+                    Selecione
+                  </option>
+                  <option style={{ background: "#181B23" }} value="Masculino">
+                    Masculino
+                  </option>
+                  <option style={{ background: "#181B23" }} value="Feminino">
+                    Feminino
+                  </option>
+                  <option
+                    style={{ background: "#181B23" }}
+                    value="Prefiro não responder"
                   >
-                    {professions.profissoes.map((profession: string) => (
-                      <option
-                        key={profession}
-                        value={profession}
-                        style={{ background: "#181B23" }}
-                      >
-                        {profession}
-                      </option>
-                    ))}
-                  </Select>
-                </Box>
+                    Prefiro não responder
+                  </option>
+                </SelectComponent>
               </SimpleGrid>
             </VStack>
 
@@ -287,7 +327,7 @@ export default function EditUser() {
                 </Button>
                 <Button
                   isLoading={formState.isSubmitting}
-                  onClick={handleSubmit(handleEditUser)}
+                  onClick={handleSubmit(handleConfirmEditUser)}
                   colorScheme="red"
                 >
                   Salvar

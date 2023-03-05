@@ -1,56 +1,49 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
-export const faunadb = require('faunadb');
+export const faunadb = require("faunadb");
 
 const q = faunadb.query;
 
 const client = new faunadb.Client({
-    secret: process.env.FAUNA_SECRET,
-    domain: 'db.fauna.com'
-})
+  secret: process.env.FAUNA_SECRET,
+  domain: "db.fauna.com",
+});
 
 module.exports = async (req: NextApiRequest, res: NextApiResponse) => {
-    const { name, email, sex, profession } = req.body;
+  const { name, email, sex, profession } = req.body;
 
-    if (req.method === "POST") {
-        try {
-            const user = await client.query(
-                q.Get(
-                    q.Match(
-                        q.Index('real_user_by_email'), (String(email))
-                    )
-                )
+  if (req.method === "POST") {
+    try {
+      const response = await client.query(
+        q.If(
+          q.Not(
+            q.Exists(
+              q.Match(
+                q.Index("real_user_by_email"),
+                q.Casefold(email as string)
+              )
             )
-
-            if (user) {
-                return res.status(409).json('Usuário já cadastrado.')
-            }
-        } catch (e: any) {
-            if (e.message === 'instance not found') {
-                try {
-                    await client.query(
-                        q.Create(q.Collection("real_users"), {
-                            data: {
-                                name,
-                                email,
-                                sex,
-                                profession,
-                                picture: "none",
-                                needUpdateProfile: true,
-                                created_at: Date.now(),
-                                updated_at: Date.now()
-                            }
-                        }
-                        )
-                    )
-
-                    return res.status(200).json("Usuário criado com sucesso!")
-                } catch {
-                    return res.status(500).json('Não foi possível cadastrar o usuário.')
-                }
-            }
-
-            return res.status(500).json('Não foi possível cadastrar o usuário.')
-        }
+          ),
+          q.Create(q.Collection("real_users"), {
+            data: {
+              name,
+              email,
+              sex,
+              profession,
+              picture: "none",
+              needUpdateProfile: true,
+              created_at: Date.now(),
+              updated_at: Date.now(),
+            },
+          }),
+          q.Get(
+            q.Match(q.Index("real_user_by_email"), q.Casefold(email as string))
+          )
+        )
+      );
+      return res.status(200).json(response);
+    } catch (e: any) {
+      return res.status(500).json(e?.message || e);
     }
-}
+  }
+};

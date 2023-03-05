@@ -7,9 +7,8 @@ import {
   SimpleGrid,
   VStack,
   Button,
-  FormLabel,
-  Select,
 } from "@chakra-ui/react";
+import professions from "../../utils/professions.json";
 import { useRouter } from "next/router";
 import { Input } from "../../components/Form/Input";
 
@@ -27,6 +26,7 @@ import { getSession } from "@auth0/nextjs-auth0";
 import { GetServerSideProps } from "next";
 import { NextSeo } from "next-seo";
 import { capitalize } from "../../utils/capitalize";
+import { SelectComponent } from "../../components/Form/Select";
 
 interface CreateUser {
   name: string;
@@ -39,13 +39,17 @@ const emailRegex =
   /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
 const createUserFormSchema = yup.object().shape({
-  name: yup.string().required("Nome é obrigatório."),
+  name: yup.string().required("Nome é obrigatório"),
 
   email: yup
     .string()
-    .required("E-mail é obrigatório.")
-    .email("Digite um e-mail válido.")
-    .matches(emailRegex, "Digite um e-mail válido."),
+    .required("E-mail é obrigatório")
+    .email("Digite um e-mail válido")
+    .matches(emailRegex, "Digite um e-mail válido"),
+
+  profession: yup.string().required("Profissão é obrigatório"),
+
+  sex: yup.string().required("Sexo é obrigatório"),
 });
 
 export default function CreateUser() {
@@ -132,43 +136,48 @@ export default function CreateUser() {
               </SimpleGrid>
 
               <SimpleGrid minChildWidth="220px" spacing="8" w="100%">
-                <Box>
-                  <FormLabel htmlFor="sex">Gênero: </FormLabel>
-                  <Select
-                    {...register("sex")}
-                    name="sex"
-                    id="sex"
-                    variant="filled"
-                    bgColor="gray.900"
-                    borderColor="gray.900"
-                    focusBorderColor="red.500"
-                    _hover={{ bgColor: "gray.900" }}
-                    _focus={{ bgColor: "gray.900" }}
-                    size="lg"
-                  >
-                    <option style={{ background: "#181B23" }} value="Masculino">
-                      Masculino
-                    </option>
-                    <option style={{ background: "#181B23" }} value="Feminino">
-                      Feminino
-                    </option>
-                    <option
-                      style={{ background: "#181B23" }}
-                      value="Prefiro não responder"
-                    >
-                      Prefiro não responder
-                    </option>
-                  </Select>
-                </Box>
-
-                <Input
+                <SelectComponent
                   {...register("profession")}
+                  error={errors?.profession}
                   name="profession"
-                  type="text"
                   label="Profissão:"
-                  error={errors.profession}
-                  isRequired
-                />
+                >
+                  <option style={{ background: "#181B23" }} value="">
+                    Selecione
+                  </option>
+                  {professions.profissoes.map((profession: string) => (
+                    <option
+                      key={profession}
+                      value={profession}
+                      style={{ background: "#181B23" }}
+                    >
+                      {profession}
+                    </option>
+                  ))}
+                </SelectComponent>
+
+                <SelectComponent
+                  {...register("sex")}
+                  error={errors?.sex}
+                  name="sex"
+                  label="Sexo:"
+                >
+                  <option style={{ background: "#181B23" }} value="">
+                    Selecione
+                  </option>
+                  <option style={{ background: "#181B23" }} value="Masculino">
+                    Masculino
+                  </option>
+                  <option style={{ background: "#181B23" }} value="Feminino">
+                    Feminino
+                  </option>
+                  <option
+                    style={{ background: "#181B23" }}
+                    value="Prefiro não responder"
+                  >
+                    Prefiro não responder
+                  </option>
+                </SelectComponent>
               </SimpleGrid>
             </VStack>
 

@@ -55,20 +55,12 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
     };
   }
 
-  const user = await getRealUser(session?.user?.email);
-
-  if (!user) {
-    try {
-      await api.post("realusers/create", {
-        name: session?.user?.name,
-        email: session?.user?.email,
-        sex: "Não informado",
-        profession: "Não informado",
-      });
-    } catch (err) {
-      console.log(err);
-    }
-  }
+  await api.post("realusers/create", {
+    name: session?.user?.name,
+    email: session?.user?.email,
+    sex: "Não informado",
+    profession: "Não informado",
+  });
 
   const queryClient = new QueryClient();
   await queryClient.prefetchQuery(["real_user"], () =>

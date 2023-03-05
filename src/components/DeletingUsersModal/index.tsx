@@ -22,7 +22,7 @@ interface ModalProps {
   userId: string;
 }
 
-export function ModalComponent({
+export function DeletingUsersModal({
   isLoading,
   isConfirmingDeleteUsers,
   isErrorOnDelete,

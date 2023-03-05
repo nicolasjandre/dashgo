@@ -26,7 +26,7 @@ import { useUser } from "../../hooks/useUser";
 import { useMutation, useQueryClient } from "react-query";
 import { api } from "../../services/axios";
 import { NextSeo } from "next-seo";
-import { ModalComponent } from "../../components/DeletingUsersModal";
+import { DeletingUsersModal } from "../../components/DeletingUsersModal";
 import { useEffect, useState } from "react";
 
 export default function EditUser() {
@@ -103,7 +103,7 @@ export default function EditUser() {
       <Box>
         <Header />
 
-        <ModalComponent
+        <DeletingUsersModal
           handleCloseDeletingUsersModal={handleCloseDeletingUsersModal}
           handleDeleteUser={handleDeleteUser}
           isConfirmingDeleteUsers={isConfirmingDeleteUsers}
